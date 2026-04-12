@@ -1,0 +1,6 @@
+<svg width="160" height="160" viewBox="-80 -80 160 160" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="0,-68 -3.5,0 0,12 3.5,0" fill="#ff2020"/>
+  <polygon points="0,-68 -1,0 0,-20 1,0" fill="rgba(255,180,180,0.4)"/>
+  <circle cx="0" cy="0" r="7" fill="#1a1a1a" stroke="#ff2020" stroke-width="1.5"/>
+  <circle cx="0" cy="0" r="3" fill="#ff2020"/>
+</svg>

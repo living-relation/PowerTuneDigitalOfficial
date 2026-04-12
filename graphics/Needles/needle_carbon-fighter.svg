@@ -1,0 +1,22 @@
+<svg width="160" height="160" viewBox="-80 -80 160 160" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="c" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#222"/>
+      <rect x="0" y="0" width="3" height="3" fill="#2e2e2e"/>
+      <rect x="3" y="3" width="3" height="3" fill="#2e2e2e"/>
+      <rect x="0.5" y="0.5" width="2" height="2" fill="#383838"/>
+      <rect x="3.5" y="3.5" width="2" height="2" fill="#383838"/>
+    </pattern>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="rgba(180,200,230,0.8)"/>
+      <stop offset="50%" stop-color="rgba(255,255,255,0.3)"/>
+      <stop offset="100%" stop-color="rgba(180,200,230,0.1)"/>
+    </linearGradient>
+  </defs>
+  <polygon points="0,-66 -7,-8 0,14 7,-8" fill="url(#c)"/>
+  <polygon points="0,-66 -7,-8 -5.5,-10 0,-64" fill="url(#g)"/>
+  <polygon points="0,-66 7,-8 5.5,-10 0,-64" fill="rgba(255,255,255,0.15)"/>
+  <polygon points="0,-66 -4,-52 4,-52" fill="#ff2020"/>
+  <circle cx="0" cy="0" r="10" fill="url(#c)" stroke="#c0c8d8" stroke-width="1.5"/>
+  <circle cx="0" cy="0" r="4" fill="#c0c8d8"/>
+</svg>
