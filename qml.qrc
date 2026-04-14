@@ -140,5 +140,33 @@
         <file>graphics/brightnessIncrease.png</file>
         <file>graphics/brightnessDecrease.png</file>
         <file>Gauges/Keypad.qml</file>
+        <file>Gauges/NeedleStyleList.qml</file>
+        <file>graphics/Needles/needle_classic-knife.svg</file>
+        <file>graphics/Needles/needle_carbon-fighter.svg</file>
+        <file>graphics/Needles/needle_hellfire.svg</file>
+        <file>graphics/Needles/needle_motorsport-paddle.svg</file>
+        <file>graphics/Needles/needle_neon-cyber.svg</file>
+        <file>graphics/Needles/needle_oem-red.svg</file>
+        <file>graphics/Needles/needle_plasma.svg</file>
+        <file>graphics/Needles/needle_rallystripe.svg</file>
+        <file>graphics/Needles/needle_spear.svg</file>
+        <file>graphics/Needles/needle_titanium-spike.svg</file>
+        <file>graphics/Needles/needle_turbo-blade.svg</file>
+        <file>fonts/custom fonts/Aerospace.ttf</file>
+        <file>fonts/custom fonts/Alphacorsa Personal Use.ttf</file>
+        <file>fonts/custom fonts/Alphacorsa Personal Use Italic.ttf</file>
+        <file>fonts/custom fonts/Avega-Italic.ttf</file>
+        <file>fonts/custom fonts/BoldnessRace.ttf</file>
+        <file>fonts/custom fonts/Draco.otf</file>
+        <file>fonts/custom fonts/Jedar.ttf</file>
+        <file>fonts/custom fonts/Sakana.ttf</file>
+        <file>fonts/custom fonts/Shock Surgent.otf</file>
+        <file>fonts/custom fonts/Sonic Turbo.otf</file>
+        <file>fonts/custom fonts/SuperCar-ExpMLDemo.otf</file>
+        <file>fonts/custom fonts/SuperCar-OutlineExpMRDemo.otf</file>
+        <file>fonts/custom fonts/United Kingdom DEMO.otf</file>
+        <file>fonts/custom fonts/Braaap_S2.otf</file>
+        <file>fonts/custom fonts/Braaap_S4.otf</file>
+        <file>fonts/custom fonts/Braaap_S11.otf</file>
     </qresource>
 </RCC>
