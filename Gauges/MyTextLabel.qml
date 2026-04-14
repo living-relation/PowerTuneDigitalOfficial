@@ -210,7 +210,7 @@ Item {
             ComboBox{
                 id: cbx_titlefontstyle
                 width: parent.width
-                model: Qt.fontFamilies()
+                model: window.powerTuneFontList
                 visible:true
                 font.pixelSize: 15
                 currentIndex: 1
