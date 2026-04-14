@@ -110,6 +110,10 @@ Item {
         y: 0
         z: 200        //ensure the Menu is always in the foreground
         Drag.active: true
+        onVisibleChanged: {
+            changesize.x = -statepicture.x;
+            changesize.y = -statepicture.y;
+        }
         onWidthChanged: {
             changesize.width = 800 * 0.2875
         }
