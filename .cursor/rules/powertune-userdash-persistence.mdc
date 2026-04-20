@@ -1,0 +1,30 @@
+---
+description: User Dash 1–3 layout persistence, .txt import/export, swipe carousel
+globs: "**/Gauges/Userdash*.qml,**/Settings/DashSelector*.qml,**/main.qml,**/connect.{cpp,h}"
+alwaysApply: false
+---
+
+# PowerTune — user dashboards & persistence
+
+## Swipe / slots
+
+- `main.qml` `SwipeView`: first `Loader` defaults to `Intro.qml`; `second`/`third`/`fourth` `Loader` are **active** when `Dashboard.Visibledashes` is **>1 / >2 / >3**; trailing **`lastPage`** hosts **`SerialSettings`** (not a gauge canvas).
+- **Settings → Dash Sel.** (`Settings/DashSelector.qml`): `numberofdashes` **1–4** sets `Dashboard.Visibledashes` and inserts/removes loaders via `adremove()`.
+- **`DashSelectorWidget`**: each slot’s combo sets `linkedLoader.source` from `getDashByIndex()`. **User Dash 1/2/3** → `qrc:/Gauges/Userdash1.qml` … `Userdash3.qml` — **three** distinct custom QML canvases (duplicated logic, **separate** `Settings` keys / `datastore`).
+
+## What survives reboot
+
+- **Primary:** `Qt.labs.settings` JSON per screen — `datastore1` / `datastore2` / `datastore3` (aliases on `mainwindow` in each `UserdashN.qml`).
+- **`Component.onCompleted`:** if `datastore` string non-empty → `JSON.parse` → `gaugelist` → **`createDash()`** rebuilds gauges. Empty string → **blank** canvas.
+- **Save** in Userdash UI updates `datastore = JSON.stringify(gaugelist…)` → persisted.
+
+## `.txt` under `/home/pi/UserDashboards/`
+
+- **List:** `Connect::readavailabledashfiles()` → `Dashboard.dashfiles`.
+- **Import:** `setfilenameN` + `readdashsetupN()` reads file line-by-line, comma-split, `setdashsetupN(list)`; QML **`onDashsetupNChanged`** dispatches by first column (`Round gauge`, `Square gauge`, …).
+- **Export:** `saveDashtofile()` + `Connect::saveDashtoFile` writes `.txt` there.
+- **Boot:** does **not** auto-load arbitrary `.txt` into user dashes; after hand-editing a file use **Import → Save** so `datastoreN` updates.
+
+## Cluster caveat
+
+- `Cluster.qml` “Load” uses **`readMaindashsetup()`** / **`MainDash.txt`** — different path than **`UserdashN`** `readdashsetupN()`.
