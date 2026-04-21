@@ -59,6 +59,39 @@ ApplicationWindow {
 
     }
 
+    // Custom font loaders - register all PowerTune fonts
+    FontLoader { source: "qrc:/fonts/custom fonts/Aerospace.ttf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/Alphacorsa Personal Use.ttf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/Alphacorsa Personal Use Italic.ttf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/Avega-Italic.ttf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/BoldnessRace.ttf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/Draco.otf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/Jedar.ttf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/Sakana.ttf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/Shock Surgent.otf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/Sonic Turbo.otf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/SuperCar-ExpMLDemo.otf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/SuperCar-OutlineExpMRDemo.otf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/United Kingdom DEMO.otf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/Braaap_S2.otf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/Braaap_S4.otf" }
+    FontLoader { source: "qrc:/fonts/custom fonts/Braaap_S11.otf" }
+
+    // Curated font list for all gauge font selectors
+    property var powerTuneFontList: [
+        "DS-Digital", "DS-Digital Bold", "DS-Digital Italic", "DS-Digital Bold Italic",
+        "GT200001", "Magneto", "Nissan",
+        "SF Automaton", "SF Automaton Bold", "SF Automaton Condensed",
+        "SF Automaton Extended", "SF Automaton Oblique",
+        "Segment7Standard", "TRANA___", "TRANGA__",
+        "Aerospace", "Alphacorsa Personal Use", "Alphacorsa Personal Use Italic",
+        "Avega Italic", "BoldnessRace", "Braaap S2", "Braaap S4", "Braaap S11",
+        "Draco", "Jedar", "Sakana", "Shock Surgent", "Sonic Turbo",
+        "SuperCar ExpML Demo", "SuperCar Outline ExpMR Demo", "United Kingdom DEMO",
+        "Eurostile", "DejaVu Sans", "DejaVu Sans Mono", "Liberation Sans", "Liberation Mono",
+        "Arial", "Courier New", "Times New Roman", "Georgia", "Impact"
+    ]
+
     Component.onCompleted: {
         ////console.log("ExBoard digiValue: " + custom.digiValue)
         popUpLoader.source = "qrc:/BrightnessPopUp.qml"
@@ -71,28 +104,48 @@ ApplicationWindow {
         }
     }
 
-    //Screen Keyboard do not change !!! Behaviour between QT5.10 and QT5.15 is different
+    //Screen Keyboard - restructured with smaller drag handle
     Rectangle {
         id: keyboardcontainer
-        color: "blue"
+        color: "transparent"
         visible: false
 
-        width: Screen.desktopAvailableWidth *0.63
-        height: Screen.desktopAvailableHeight *0.5
-        z: Screen.desktopAvailableHeight *0.5
+        width: Screen.desktopAvailableWidth * 0.50
+        height: Screen.desktopAvailableHeight * 0.40
+        z: Screen.desktopAvailableHeight * 0.5
 
+        // Small drag handle bar at top
+        Rectangle {
+            id: keyboardDragHandle
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 24
+            color: Qt.rgba(0.2, 0.2, 0.3, 0.7)
+            radius: 4
 
-        MouseArea {
-            id: touchAkeyboardcontainer
-            anchors.fill: parent
-            drag.target: keyboardcontainer
+            // Drag grip indicator
+            Rectangle {
+                anchors.centerIn: parent
+                width: 40
+                height: 4
+                radius: 2
+                color: Qt.rgba(1, 1, 1, 0.5)
+            }
+
+            MouseArea {
+                id: touchAkeyboardcontainer
+                anchors.fill: parent
+                drag.target: keyboardcontainer
+            }
         }
 
         InputPanel {
             id: keyboard
-            anchors.fill: keyboardcontainer
-            x:keyboardcontainer.x
-            y:keyboardcontainer.y
+            anchors.top: keyboardDragHandle.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
             visible: false
             states: State {
                 name: "visible"
@@ -708,9 +761,8 @@ ApplicationWindow {
                                digitalInput5, digitalInput6, digitalInput7, digitalInput8];
         const currentInput = digitalInputs[custom.digiValue];
 
-        // ✅ Debugging logs to see what's happening
-        console.log("Selected Input Index:", custom.digiValue);
-        console.log("Selected Input State:", currentInput);
+        //console.log("Selected Input Index:", custom.digiValue);
+        //console.log("Selected Input State:", currentInput);
 
         // If debounce is active or input hasn't changed, return early
         if (debounceActive || currentInput === lastInputState) return;
