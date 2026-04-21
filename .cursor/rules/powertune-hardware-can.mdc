@@ -1,0 +1,26 @@
+---
+description: Pi boot config, GPIO/SPI CAN hat, CAN data path to Dashboard / QML
+globs: "**/config.txt,**/udpreceiver.{cpp,h},**/Extender.{cpp,h},**/connect.cpp,**/main.cpp"
+alwaysApply: false
+---
+
+# PowerTune — Pi hardware & CAN
+
+## `config.txt` (DT, not Qt GPIO)
+
+- **`dtparam=spi=on`**, **`dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25`** → MCP2515 on SPI; **IRQ = BCM GPIO 25**. **`dtoverlay=disable-bt`** (Pi 4–appropriate) + **`enable_uart=1`**. **`dtparam=audio=on`**.
+- Deploy note: Pi OS Bookworm may use **`/boot/firmware/config.txt`** on the SD card.
+
+## CAN → UI
+
+- **UDP `45454`:** `udpreceiver` parses `"id,value"` → `DashBoard::set…()`.
+- **SocketCAN:** `Extender::openCAN` → **`can0`** (`QCanBus` socketcan), `framesReceived` → decoders + `setcan()` for raw monitor list.
+- **QML:** `Dashboard` exposed on engine; gauges bind properties / `Dashboard[sourcename]`.
+
+## CAN hat identity
+
+- Repo cannot name a specific HAT from “fan + 2-wire CAN”; **`config.txt`** implies **MCP2515 + 16 MHz + IRQ GPIO 25** class wiring.
+
+## `main.cpp` note
+
+- `Connect` ctor sets `Extender2` to `m_extender`; **`main.cpp`** also sets `Extender2` after `Connect` — verify which instance QML sees if touching startup.
