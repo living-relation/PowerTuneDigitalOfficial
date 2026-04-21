@@ -105,14 +105,10 @@ Item {
         visible: false
         width : 800 * 0.2875//230 Taking the resolution from the 7" and dividing it by (230/screenWidth)
         height : 480 * 0.667//320 Taking the resolution from the 7" and dividing it by (230/screenHeight)
-        x: 0
-        y: 0
+        x: -statepicture.x
+        y: -statepicture.y
         z: 200
         Drag.active: true
-        onVisibleChanged: {
-            changesize.x = -statepicture.x;
-            changesize.y = -statepicture.y;
-        }
         MouseArea {
             anchors.fill: parent
             drag.target: parent

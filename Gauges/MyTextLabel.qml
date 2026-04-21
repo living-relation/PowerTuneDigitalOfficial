@@ -210,7 +210,8 @@ Item {
             ComboBox{
                 id: cbx_titlefontstyle
                 width: parent.width
-                model: window.powerTuneFontList
+                // Curated list lives on ApplicationWindow; `window` id is not in scope for this component file.
+                model: ApplicationWindow.window ? ApplicationWindow.window.powerTuneFontList : Qt.fontFamilies()
                 visible:true
                 font.pixelSize: 15
                 currentIndex: 1
