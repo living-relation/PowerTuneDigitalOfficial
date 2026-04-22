@@ -169,7 +169,7 @@ ApplicationWindow {
 
     Connections{
             target: Dashboard
-            onBrigtnessChanged: {
+            onBrightnessChanged: {
             brightness.value = Dashboard.Brightness
             }
     }
@@ -382,7 +382,7 @@ ApplicationWindow {
 
              onValueChanged: {
                       ////console.log("Slider Value Changed: " + brightness.value + " Dashboard Brightness: " + Dashboard.Brightness)
-                      Connect.setSreenbrightness(brightness.value);
+                      Connect.setScreenbrightness(brightness.value);
                       AppSettings.writebrightnessettings(brightness.value);
                       }
              // Conditional assignment of 'from' and 'to' properties
@@ -433,7 +433,7 @@ ApplicationWindow {
                                  ddcUtilBrightnessIncrease = 75
                              }
 
-                             Connect.setSreenbrightness(ddcUtilBrightnessIncrease); // set the brightness with the new value
+                             Connect.setScreenbrightness(ddcUtilBrightnessIncrease); // set the brightness with the new value
                              AppSettings.writebrightnessettings(ddcUtilBrightnessIncrease);
                          }else{
                              brightnessIncrease += 50
@@ -441,7 +441,7 @@ ApplicationWindow {
                                  brightnessIncrease = 250
                              }
 
-                             Connect.setSreenbrightness(brightnessIncrease); // set the brightness with the new value
+                             Connect.setScreenbrightness(brightnessIncrease); // set the brightness with the new value
                              AppSettings.writebrightnessettings(brightnessIncrease);
                          }
                      }
@@ -485,7 +485,7 @@ ApplicationWindow {
                                  ddcUtilBrightnessIncrease = 0
                              }
 
-                             Connect.setSreenbrightness(ddcUtilBrightnessIncrease); // set the brightness with the new value
+                             Connect.setScreenbrightness(ddcUtilBrightnessIncrease); // set the brightness with the new value
                              AppSettings.writebrightnessettings(ddcUtilBrightnessIncrease);
                          }else{
                              brightnessIncrease -= 50
@@ -493,7 +493,7 @@ ApplicationWindow {
                                  brightnessIncrease = 25
                              }
 
-                             Connect.setSreenbrightness(brightnessIncrease); // set the brightness with the new value
+                             Connect.setScreenbrightness(brightnessIncrease); // set the brightness with the new value
                              AppSettings.writebrightnessettings(brightnessIncrease);
                          }
                      }
@@ -712,11 +712,11 @@ ApplicationWindow {
                 //console.log("Timer for Max Brightness started")
                 if (Qt.platform.os === "linux" && HAVE_DDCUTIL) {
                   //console.log("Max Brightness on Boot Run" + custom.maxBrightnessOnBoot)
-                  Connect.setSreenbrightness(75);
+                  Connect.setScreenbrightness(75);
                   AppSettings.writebrightnessettings(75);
                 } else {
                   //console.log("DDCUTIL Failed max brightness run without ddc " + custom.maxBrightnessOnBoot)
-                  Connect.setSreenbrightness(250);
+                  Connect.setScreenbrightness(250);
                   AppSettings.writebrightnessettings(250);
                 }
             }
@@ -736,12 +736,12 @@ ApplicationWindow {
 
         if (currentInput === 1) {
             // If the input is HIGH, set brightness to OFF
-            Connect.setSreenbrightness(BRIGHTNESS_OFF);
+            Connect.setScreenbrightness(BRIGHTNESS_OFF);
             AppSettings.writebrightnessettings(BRIGHTNESS_OFF);
             //console.log(`Brightness Set to 0 for Input ${custom.digiValue + 1}`);
         } else if (currentInput === 0) {
             // If the input is LOW, set brightness to ON
-            Connect.setSreenbrightness(BRIGHTNESS_ON);
+            Connect.setScreenbrightness(BRIGHTNESS_ON);
             AppSettings.writebrightnessettings(BRIGHTNESS_ON);
             //console.log(`Brightness Set to ${BRIGHTNESS_ON} for Input ${custom.digiValue + 1}`);
         }
@@ -773,12 +773,12 @@ ApplicationWindow {
 
         if (currentInput === 1) {
             // If the input is HIGH, set brightness to OFF
-            Connect.setSreenbrightness(BRIGHTNESS_OFF);
+            Connect.setScreenbrightness(BRIGHTNESS_OFF);
             AppSettings.writebrightnessettings(BRIGHTNESS_OFF);
             //console.log(`Brightness Set to 0 for Input ${custom.digiValue + 1}`);
         } else if (currentInput === 0) {
             // If the input is LOW, set brightness to ON
-            Connect.setSreenbrightness(BRIGHTNESS_ON);
+            Connect.setScreenbrightness(BRIGHTNESS_ON);
             AppSettings.writebrightnessettings(BRIGHTNESS_ON);
             //console.log(`Brightness Set to ${BRIGHTNESS_ON} for Input ${custom.digiValue + 1}`);
         }

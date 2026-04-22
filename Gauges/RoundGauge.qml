@@ -88,8 +88,11 @@ Rectangle{
     property string peakneedletipwidth
     property string peakneedleoffset
     property string peakneedlevisible
+    property string needleStyle: "split"
+    property int touchCounter: 0
+    property real lastTouchTime: 0
 
-    Drag.active: true
+    Drag.active: Dashboard.draggable === 1
     DatasourcesList{id: powertunedatasource}
 
     SequentialAnimation {
@@ -148,9 +151,7 @@ Rectangle{
                 timerDoubleClick.restart();
             } else if (touchCounter == 2) {
                 var currentTime = Date.now();
-                if (currentTime - lastTouchTime <= 500) { // Double-tap detected within 500 ms
-                    console.log("Double-tap detected at", mouse.x, mouse.y);
-                }
+                if (currentTime - lastTouchTime <= 500) { }
                 touchCounter = 0;
                 timerDoubleClick.stop();
                 popupmenu.popup(touchArea.mouseX, touchArea.mouseY);
@@ -226,24 +227,36 @@ Rectangle{
                     onPaint: {
                         var ctx = getContext("2d");
                         ctx.reset();
-                        ctx.beginPath();
-                        ctx.moveTo(xCenter, height);
-                        ctx.lineTo(xCenter - parent.width / 2, height - parent.width / 2);
-                        ctx.lineTo(xCenter - needleTipWidth / 2, 0);
-                        ctx.lineTo(xCenter, yCenter - parent.height);
-                        ctx.lineTo(xCenter, 0);
-                        ctx.closePath();
-                        ctx.fillStyle = needlecolor2;
-                        ctx.fill();
+                        if (needleStyle === "solid") {
+                            ctx.beginPath();
+                            ctx.moveTo(xCenter, height);
+                            ctx.lineTo(xCenter - parent.width / 2, height - parent.width / 2);
+                            ctx.lineTo(xCenter - needleTipWidth / 2, 0);
+                            ctx.lineTo(xCenter + needleTipWidth / 2, 0);
+                            ctx.lineTo(width, height - parent.width / 2);
+                            ctx.closePath();
+                            ctx.fillStyle = needlecolor;
+                            ctx.fill();
+                        } else {
+                            ctx.beginPath();
+                            ctx.moveTo(xCenter, height);
+                            ctx.lineTo(xCenter - parent.width / 2, height - parent.width / 2);
+                            ctx.lineTo(xCenter - needleTipWidth / 2, 0);
+                            ctx.lineTo(xCenter, yCenter - parent.height);
+                            ctx.lineTo(xCenter, 0);
+                            ctx.closePath();
+                            ctx.fillStyle = needlecolor2;
+                            ctx.fill();
 
-                        ctx.beginPath();
-                        ctx.moveTo(xCenter, height)
-                        ctx.lineTo(width, height - parent.width / 2);
-                        ctx.lineTo(xCenter + needleTipWidth / 2, 0);
-                        ctx.lineTo(xCenter, 0);
-                        ctx.closePath();
-                        ctx.fillStyle = needlecolor;
-                        ctx.fill();
+                            ctx.beginPath();
+                            ctx.moveTo(xCenter, height)
+                            ctx.lineTo(width, height - parent.width / 2);
+                            ctx.lineTo(xCenter + needleTipWidth / 2, 0);
+                            ctx.lineTo(xCenter, 0);
+                            ctx.closePath();
+                            ctx.fillStyle = needlecolor;
+                            ctx.fill();
+                        }
                     }
                 }
             }
@@ -506,7 +519,8 @@ Rectangle{
     }
 Rectangle{
     id: submenue
-    Drag.active: true
+    z: 1001
+    Drag.active: false
     MouseArea {
         anchors.fill: parent
         drag.target: parent
@@ -892,9 +906,26 @@ Rectangle{
                     color:  needlecolor2select.currentText
                 }
             }
+            Text {
+                text: Translator.translate("Needle style", Dashboard.language)
+                font.bold: true
+                font.pixelSize: 15}
+            ComboBox {
+                id: needlestyleSelect
+                width: popupmenu.width /1.07
+                model: [Translator.translate("Split", Dashboard.language), Translator.translate("Solid", Dashboard.language)]
+                visible: true
+                font.pixelSize: 15
+                Component.onCompleted: {
+                    needlestyleSelect.currentIndex = (needleStyle === "solid") ? 1 : 0;
+                }
+                onCurrentIndexChanged: {
+                    needleStyle = (needlestyleSelect.currentIndex === 1) ? "solid" : "split";
+                }
+            }
 
             Text {
-                text: Translator.translate("Needle lenght", Dashboard.language)
+                text: Translator.translate("Needle length", Dashboard.language)
                 font.bold: true
                 font.pixelSize: 15}
             Grid {

@@ -113,7 +113,6 @@ void Extender::readyToRead()
 
             QStringList list = {canid, payloadHex};
             m_dashboard->setcan(list);
-            qDebug() << "Received message" << list;
     // Can Monitor end
 // Just for testing  start
         QString view;

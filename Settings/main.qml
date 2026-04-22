@@ -358,7 +358,7 @@ Rectangle {
                     }
                 }
                 Text {
-                    text: Translator.translate("GoPro Pasword", Dashboard.language)
+                    text: Translator.translate("GoPro Password", Dashboard.language)
                     font.pixelSize: windowbackround.width / 55
                     color: "white"
                 }
@@ -367,7 +367,7 @@ Rectangle {
                     width: windowbackround.width / 5
                     height: windowbackround.height / 15
                     font.pixelSize: windowbackround.width / 55
-                    placeholderText: Translator.translate("GoPro Pasword", Dashboard.language)
+                    placeholderText: Translator.translate("GoPro Password", Dashboard.language)
                     //InputMethod:Qt.
                     inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhPreferLowercase
                                       | Qt.ImhSensitiveData | Qt.ImhNoPredictiveText

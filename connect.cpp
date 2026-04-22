@@ -57,6 +57,23 @@ QString dashfilename1;
 QString dashfilename2;
 QString dashfilename3;
 
+namespace {
+QStringList parseDashSetupLine(const QString &line)
+{
+    QStringList fields = line.split(',', QString::KeepEmptyParts);
+    for (QString &field : fields) {
+        field = field.trimmed();
+    }
+
+    // Keep internal empty fields for backward compatibility with legacy CSV rows,
+    // but drop trailing separators that are frequently added on export.
+    while (!fields.isEmpty() && fields.last().isEmpty()) {
+        fields.removeLast();
+    }
+    return fields;
+}
+}
+
 Connect::Connect(QObject *parent) :
     QObject(parent),
     m_serialport(Q_NULLPTR),
@@ -132,16 +149,14 @@ Connect::~Connect()
 void Connect::saveDashtoFile(const QString &filename,const QString &dashstring)
 {
         // qDebug()<<"Filename" << filename + "txt";
-    QString fixformat = dashstring;
-    fixformat.replace(",,",", ,");
-    QStringList fields = fixformat.split(QRegExp("[\r\n]"));
+    const QString fixedFormat = dashstring;
     QFile file( "/home/pi/UserDashboards/"+filename + ".txt" );
     //QFile file(filename + ".txt" );
     file.remove(); //remove file if it exists to avoid appending of existing file
     if ( file.open(QIODevice::ReadWrite) )
     {
         QTextStream stream( &file );
-        stream << fixformat << endl;
+        stream << fixedFormat << endl;
     }
     file.close();
 }
@@ -220,7 +235,7 @@ void Connect::readMaindashsetup()
         while (!in.atEnd())
         {
             QString line = in.readLine();
-            QStringList list = line.split(QRegExp("\\,"));
+            QStringList list = parseDashSetupLine(line);
             m_dashBoard->setmaindashsetup(list);
         }
         inputFile.close();
@@ -240,17 +255,7 @@ void Connect::readdashsetup3()
         while (!in.atEnd())
         {
             QString line = in.readLine();
-            QStringList list;
-            //if (line.contains("gauge")){
-            list = line.split(QRegExp("\\,"));
-            //}
-            /*
-            else
-            {
-             line.prepend("Square gauge,");
-             list = line.split(QRegExp("\\,"));
-            }*/
-            list.removeAll(QString(""));
+            QStringList list = parseDashSetupLine(line);
             m_dashBoard->setdashsetup3(list);
         }
         inputFile.close();
@@ -270,17 +275,7 @@ void Connect::readdashsetup2()
         while (!in.atEnd())
         {
             QString line = in.readLine();
-            QStringList list;
-            //if (line.contains("gauge")){
-            list = line.split(QRegExp("\\,"));
-            //}
-            /*
-            else
-            {
-             line.prepend("Square gauge,");
-             list = line.split(QRegExp("\\,"));
-            }*/
-            list.removeAll(QString(""));
+            QStringList list = parseDashSetupLine(line);
             m_dashBoard->setdashsetup2(list);
         }
         inputFile.close();
@@ -300,17 +295,7 @@ void Connect::readdashsetup1()
         while (!in.atEnd())
         {
             QString line = in.readLine();
-            QStringList list;
-            //if (line.contains("gauge")){
-            list = line.split(QRegExp("\\,"));
-            //}
-            /*
-            else
-            {
-             line.prepend("Square gauge,");
-             list = line.split(QRegExp("\\,"));
-            }*/
-            list.removeAll(QString(""));
+            QStringList list = parseDashSetupLine(line);
             m_dashBoard->setdashsetup1(list);
         }
         inputFile.close();
@@ -319,6 +304,11 @@ void Connect::readdashsetup1()
 }
 
 void Connect::setSreenbrightness(const int &brightness)
+{
+    setScreenbrightness(brightness);
+}
+
+void Connect::setScreenbrightness(const int &brightness)
 {
 #ifdef HAVE_DDCUTIL
     // Adjust brightness using ddcutil

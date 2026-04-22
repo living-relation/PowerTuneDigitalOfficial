@@ -47,7 +47,7 @@ Rectangle{
                     }else{
                         brightnessValue = 25
                     }
-                        Connect.setSreenbrightness(brightnessValue);
+                        Connect.setScreenbrightness(brightnessValue);
                         AppSettings.writebrightnessettings(brightnessValue);
                         //console.log("Low Brightness: " + brightnessValue)
 
@@ -77,7 +77,7 @@ Rectangle{
                     }else{
                         brightnessValue = 255
                     }
-                        Connect.setSreenbrightness(brightnessValue);
+                        Connect.setScreenbrightness(brightnessValue);
                         AppSettings.writebrightnessettings(brightnessValue);
                         //console.log("High Brightness: " + brightnessValue)
 

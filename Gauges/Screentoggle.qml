@@ -9,11 +9,11 @@ Item {
 
     function toggle() {
         if (toggleswitch.state == "on")
-        {toggleswitch.state = "off",Connect.setSreenbrightness(50);}
+        {toggleswitch.state = "off",Connect.setScreenbrightness(50);}
         else
         {
             toggleswitch.state = "on";
-            Connect.setSreenbrightness(0);}
+            Connect.setScreenbrightness(0);}
     }
 
 
