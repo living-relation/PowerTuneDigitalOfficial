@@ -894,7 +894,7 @@ Rectangle{
             }
 
             Text {
-                text: Translator.translate("Needle lenght", Dashboard.language)
+                text: Translator.translate("Needle length", Dashboard.language)
                 font.bold: true
                 font.pixelSize: 15}
             Grid {

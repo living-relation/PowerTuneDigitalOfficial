@@ -393,7 +393,7 @@ Item {
 
             }
             Text {
-                text: "Extra "//Translator.translate("Extra: ", Dashboard.language)
+                text: Translator.translate("Extra", Dashboard.language)
                 font.pixelSize: mainwindow.width * 0.018
                 font.bold: true
             }
@@ -402,7 +402,7 @@ Item {
                 width: mainwindow.width * 0.25 //200
                 height: mainwindow.height * 0.083 //40
                 font.pixelSize: mainwindow.width * 0.018//15
-                model: [Translator.translate(Translator.translate("None", Dashboard.language), Dashboard.language), "PFC Sensors"]
+                model: [Translator.translate("None", Dashboard.language), "PFC Sensors"]
                 onCurrentIndexChanged: setextra();
                 delegate: ItemDelegate {
                     width: extraSelector.width
@@ -599,7 +599,7 @@ Item {
                 text: Translator.translate("Text", Dashboard.language)
                 font.pixelSize: mainwindow.width * 0.015
                 onClicked: {
-                    CreateTextScript.createText(100,50,"Textelement","Lato",15,"red","",true,0,20000,-20000)
+                    CreateTextScript.createText(100,50,"Text element","Lato",15,"red","",true,0,20000,-20000)
                     squaregaugemenu.visible = false;
                     selectcolor.visible =false;
                     Dashboard.setdraggable(0);
