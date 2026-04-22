@@ -218,17 +218,32 @@ Rectangle{
                 antialiasing: true
                 color: "transparent"
 
-                // SVG needle: shown when a needle style is selected
+                // PNG needle: shown when a needle style is selected
+                // Respects the same geometry properties as Canvas needle
                 Image {
                     id: needlesvgimage
                     visible: roundGauge.needleStyleSource !== ""
-                    width: roundGauge.needleTipWidth // Or appropriate math scaling base and tip
-                    height: roundGauge.needleLength
-                    anchors.bottomMargin: roundGauge.needleinset
+
+                    // Calculate dimensions from the same properties as Canvas needle
+                    // needleLength is a percentage, convert to pixels relative to outerRadius
+                    width: outerRadius * (needleBaseWidth * 0.01)
+                    height: outerRadius * (needleLength * 0.01)
+
+                    // Position to respect needleInset (offset from rotation center)
+                    y: outerRadius * (needleinset * 0.01)
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    // Set sourceSize to match computed dimensions for optimal rendering
+                    sourceSize.width: width
+                    sourceSize.height: height
+
                     source: roundGauge.needleStyleSource
                     fillMode: Image.Stretch
                     smooth: true
                     antialiasing: true
+
+                    // Ensure proper rotation origin at the base of the needle
+                    transformOrigin: Item.Bottom
                 }
 
                 // Canvas needle: shown when using default style
@@ -2685,4 +2700,3 @@ Menu{
         }
     }
 }
-
