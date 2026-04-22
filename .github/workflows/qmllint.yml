@@ -2,24 +2,18 @@ name: Lint
 
 on:
   push:
-    branches:
-      - develop
+    branches: [develop]
   pull_request:
-    types:
-      - assigned
-      - opened
-      - synchronize
-      - reopened
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    types: [assigned, opened, synchronize, reopened]
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
       - name: Validate QML and JavaScript files
-        uses: liri-infra/qmllint-action@master
+        uses: liri-infra/qmllint-action@v1
         env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
