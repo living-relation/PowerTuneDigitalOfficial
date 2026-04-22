@@ -17,6 +17,8 @@ Item {
     property double triggervalue : 0
     property double triggeroffvalue : 0
     Drag.active: true
+    // Raise this gauge above its siblings while its edit menu is open.
+    z: changesize.visible ? 999 : 0
     DatasourcesList{id: powertunedatasource}
     Component.onCompleted: {togglemousearea();
                             bind();
@@ -103,12 +105,15 @@ Item {
     Rectangle{
         id : changesize
         color: "darkgrey"
+        radius: 6
+        border.color: Qt.rgba(1, 1, 1, 0.25)
+        border.width: 1
         visible: false
         width : 800 * 0.2875//230 Taking the resolution from the 7" and dividing it by (230/screenWidth)
         height : 480 * 0.7//320 Taking the resolution from the 7" and dividing it by (320/screenHeight)
         x: -statepicture.x
         y: -statepicture.y
-        z: 200        //ensure the Menu is always in the foreground
+        z: 1000       //ensure the Menu is always in the foreground
         Drag.active: true
         onWidthChanged: {
             changesize.width = 800 * 0.2875
@@ -122,8 +127,30 @@ Item {
             drag.target: parent
             enabled: true
         }
+        Rectangle {
+            id: changesizeDragHandle
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 22
+            radius: 4
+            color: Qt.rgba(0.2, 0.2, 0.3, 0.85)
+            z: 2
+            Rectangle {
+                anchors.centerIn: parent
+                width: 40
+                height: 4
+                radius: 2
+                color: Qt.rgba(1, 1, 1, 0.6)
+            }
+            MouseArea {
+                anchors.fill: parent
+                drag.target: changesize
+            }
+        }
         Grid { width: parent.width
-            height:parent.height
+            anchors.top: changesizeDragHandle.bottom
+            anchors.bottom: parent.bottom
             rows: 7
             columns: 1
             rowSpacing :5

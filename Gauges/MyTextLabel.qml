@@ -19,6 +19,8 @@ Item {
     property double warnvaluelow : -20000
     property string resettextcolor
     Drag.active: true
+    // Raise this gauge above its siblings while its edit menu is open.
+    z: changesize.visible ? 999 : 0
 
     Component.onCompleted: {
         togglemousearea();
@@ -106,17 +108,42 @@ Item {
     Rectangle{
         id : changesize
         color: "darkgrey"
+        radius: 6
+        border.color: Qt.rgba(1, 1, 1, 0.25)
+        border.width: 1
         visible: false
         width : 200
         height :480
         x: 0
         y: 0
-        z: 200          //ensure the Menu is always in the foreground
+        z: 1000         //ensure the Menu is always in the foreground
         Drag.active: true
         MouseArea {
             anchors.fill: parent
             drag.target: parent
             enabled: true
+        }
+        // Dedicated drag grip so the menu stays easy to grab on touch.
+        Rectangle {
+            id: changesizeDragHandle
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 22
+            radius: 4
+            color: Qt.rgba(0.2, 0.2, 0.3, 0.85)
+            z: 2
+            Rectangle {
+                anchors.centerIn: parent
+                width: 40
+                height: 4
+                radius: 2
+                color: Qt.rgba(1, 1, 1, 0.6)
+            }
+            MouseArea {
+                anchors.fill: parent
+                drag.target: changesize
+            }
         }
         onVisibleChanged: {
             changesize.x = -mytextlabel.x;
@@ -126,7 +153,8 @@ Item {
 
         Grid {
             width: parent.width
-            height:parent.height
+            anchors.top: changesizeDragHandle.bottom
+            anchors.bottom: parent.bottom
             id: popupgrid
             rows: 12
             columns: 1

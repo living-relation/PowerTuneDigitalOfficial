@@ -14,6 +14,8 @@ Item {
     property string mainvaluename
     property double triggervalue : 0
     Drag.active: true
+    // Raise this gauge above its siblings while its edit menu is open.
+    z: changesize.visible ? 999 : 0
     x: 200
     y: 200
     DatasourcesList{id: powertunedatasource}
@@ -102,21 +104,47 @@ Item {
     Rectangle{
         id : changesize
         color: "darkgrey"
+        radius: 6
+        border.color: Qt.rgba(1, 1, 1, 0.25)
+        border.width: 1
         visible: false
         width : 800 * 0.2875//230 Taking the resolution from the 7" and dividing it by (230/screenWidth)
         height : 480 * 0.667//320 Taking the resolution from the 7" and dividing it by (230/screenHeight)
         x: -statepicture.x
         y: -statepicture.y
-        z: 200
+        z: 1000
         Drag.active: true
         MouseArea {
             anchors.fill: parent
             drag.target: parent
             enabled: true
         }
+        // Dedicated drag grip for easier touch handling.
+        Rectangle {
+            id: changesizeDragHandle
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 22
+            radius: 4
+            color: Qt.rgba(0.2, 0.2, 0.3, 0.85)
+            z: 2
+            Rectangle {
+                anchors.centerIn: parent
+                width: 40
+                height: 4
+                radius: 2
+                color: Qt.rgba(1, 1, 1, 0.6)
+            }
+            MouseArea {
+                anchors.fill: parent
+                drag.target: changesize
+            }
+        }
         Grid {
             width: parent.width
-            height: parent.height
+            anchors.top: changesizeDragHandle.bottom
+            anchors.bottom: parent.bottom
             rows: 7
             columns: 1
             rowSpacing :5

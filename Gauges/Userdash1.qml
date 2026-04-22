@@ -286,13 +286,36 @@ Item {
         color : "darkgrey"
         x: 0
         y: 0
-        z:200
+        z:900
         visible: false
         MouseArea {
             id: touchArearpmbackroundselector
             anchors.fill:parent
             drag.target: rpmbackroundselector
         }
+        // Dedicated drag grip so the RPM/background menu stays easy to grab on touch.
+        Rectangle {
+            id: rpmbackroundselectorDragHandle
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 22
+            radius: 4
+            color: Qt.rgba(0.2, 0.2, 0.3, 0.85)
+            z: 2
+            Rectangle {
+                anchors.centerIn: parent
+                width: 40
+                height: 4
+                radius: 2
+                color: Qt.rgba(1, 1, 1, 0.6)
+            }
+            MouseArea {
+                anchors.fill: parent
+                drag.target: rpmbackroundselector
+            }
+        }
+
         Grid{
             rows:10
             columns: 1
@@ -432,13 +455,36 @@ Item {
         color : "darkgrey"
         x :590
         y: 0
-        z:200
+        z:900
         visible: false
         MouseArea {
             id: touchAreasquaregaugemenu
             anchors.fill:parent
             drag.target: squaregaugemenu
         }
+        // Dedicated drag grip so the gauge-creation menu stays easy to grab on touch.
+        Rectangle {
+            id: squaregaugemenuDragHandle
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 22
+            radius: 4
+            color: Qt.rgba(0.2, 0.2, 0.3, 0.85)
+            z: 2
+            Rectangle {
+                anchors.centerIn: parent
+                width: 40
+                height: 4
+                radius: 2
+                color: Qt.rgba(1, 1, 1, 0.6)
+            }
+            MouseArea {
+                anchors.fill: parent
+                drag.target: squaregaugemenu
+            }
+        }
+
 ///////////////////
         /*
         //Combobox filtered by ECU. Datasources must still be filled with each supported ECU
@@ -1256,12 +1302,36 @@ Item {
         width: mainwindow.width * 0.625 //500
         color: "darkgrey"
         visible: false
+        z:900
 
         MouseArea {
             id: touchAreacolorselect
             anchors.fill:parent
             drag.target: selectcolor
         }
+        // Dedicated drag grip so the color picker menu stays easy to grab on touch.
+        Rectangle {
+            id: selectcolorDragHandle
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 22
+            radius: 4
+            color: Qt.rgba(0.2, 0.2, 0.3, 0.85)
+            z: 2
+            Rectangle {
+                anchors.centerIn: parent
+                width: 40
+                height: 4
+                radius: 2
+                color: Qt.rgba(1, 1, 1, 0.6)
+            }
+            MouseArea {
+                anchors.fill: parent
+                drag.target: selectcolor
+            }
+        }
+
 
         Grid{
             rows:5
