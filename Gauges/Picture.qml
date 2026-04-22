@@ -12,9 +12,6 @@ Item {
     //property int picturewidth
     property string increasedecreaseident
     Drag.active: true
-    // Raise this gauge above its siblings while its edit menu is open so the
-    // menu is never hidden behind a later-added gauge on the same dashboard.
-    z: changesize.visible ? 999 : 0
     Component.onCompleted: togglemousearea();
 
     Connections{
@@ -78,15 +75,12 @@ Item {
     Rectangle{
         id : changesize
         color: "darkgrey"
-        radius: 6
-        border.color: Qt.rgba(1, 1, 1, 0.25)
-        border.width: 1
         visible: false
         width : 200
-        height : 180
+        height : 150
         x: 0
         y: 0
-        z: 1000        //ensure the Menu is always in the foreground
+        z: 9999        //ensure the Menu is always in the foreground
         Drag.active: true
         onVisibleChanged: {
             changesize.x= -picture.x;
@@ -97,33 +91,9 @@ Item {
             drag.target: parent
             enabled: true
         }
-        // Dedicated drag grip so the menu stays easy to grab on touch even
-        // when most of the body is covered by interactive controls.
-        Rectangle {
-            id: changesizeDragHandle
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: 22
-            radius: 4
-            color: Qt.rgba(0.2, 0.2, 0.3, 0.85)
-            z: 2
-            Rectangle {
-                anchors.centerIn: parent
-                width: 40
-                height: 4
-                radius: 2
-                color: Qt.rgba(1, 1, 1, 0.6)
-            }
-            MouseArea {
-                anchors.fill: parent
-                drag.target: changesize
-            }
-        }
 
         Grid { width: parent.width
-            anchors.top: changesizeDragHandle.bottom
-            anchors.bottom: parent.bottom
+            height:parent.height
             rows: 4
             columns: 1
             rowSpacing :5

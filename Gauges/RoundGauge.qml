@@ -70,14 +70,17 @@ Rectangle{
     property double traillowboarder  : 0.33
     property double trailbottomboarder : 0.20
 
-    property string labelfont : "Eurostyle"
+    property string labelfont : "Eurostile"
     property int  desctextx
     property int desctexty
     property int desctextfontsize
     property bool desctextfontbold : true
-    property string desctextfonttype : "Eurostyle"
+    property string desctextfonttype : "Eurostile"
     property string desctextdisplaytext
     property string desctextdisplaytextcolor
+
+    // Needle style: "" = default canvas needle, otherwise SVG source path
+    property string needleStyleSource: ""
 
     //peak needle
 
@@ -216,8 +219,22 @@ Rectangle{
                 implicitHeight: outerRadius *(needleLength *0.01)
                 antialiasing: true
                 color: "transparent"
+
+                // SVG needle: shown when a needle style is selected
+                Image {
+                    id: needlesvgimage
+                    visible: roundGauge.needleStyleSource !== ""
+                    anchors.fill: parent
+                    source: roundGauge.needleStyleSource
+                    fillMode: Image.Stretch
+                    smooth: true
+                    antialiasing: true
+                }
+
+                // Canvas needle: shown when using default style
                 Canvas {
                     id: needlecanvas
+                    visible: roundGauge.needleStyleSource === ""
                     anchors.centerIn: parent
                     implicitWidth: parent.width
                     implicitHeight: parent.height
@@ -553,11 +570,12 @@ Rectangle{
     }
     Item {
         id: menustructure
+        z: 9999
 
         Menu{
             id: popupmenu
             font.pixelSize: 15
-            z:1000
+            z: 9999
             MenuItem {
                 text: Translator.translate("Test sweep", Dashboard.language)
                 font.pixelSize: 15
@@ -644,6 +662,11 @@ Rectangle{
                 }
             }
             MenuItem {
+                text: Translator.translate("Needle style", Dashboard.language)
+                font.pixelSize: 15
+                onClicked: needlestylemenu.popup(touchArea.mouseX, touchArea.mouseY);
+            }
+            MenuItem {
                 text: Translator.translate("Delete gauge", Dashboard.language)
                 font.pixelSize: 15
                 onClicked: roundGauge.destroy();
@@ -667,12 +690,77 @@ Rectangle{
     }
 Rectangle{
     id: submenue
+    z: 9999
     Drag.active: true
     MouseArea {
         anchors.fill: parent
         drag.target: parent
         enabled: false
     }
+
+    // Needle Style Menu
+    Menu {
+        id: needlestylemenu
+        closePolicy: Popup.NoAutoClose
+        z: 9999
+        Rectangle {
+            color: "darkgrey"
+            width: popupmenu.width
+            height: 280
+            radius: 10
+            Column {
+                anchors.fill: parent
+                anchors.margins: 6
+                spacing: 6
+                Text {
+                    text: Translator.translate("Needle style", Dashboard.language)
+                    font.bold: true
+                    font.pixelSize: 15
+                    color: "white"
+                }
+                NeedleStyleList { id: needleStyleListModel }
+                ListView {
+                    id: needleStyleListView
+                    width: parent.width - 12
+                    height: 200
+                    model: needleStyleListModel
+                    clip: true
+                    delegate: Rectangle {
+                        width: needleStyleListView.width
+                        height: 36
+                        color: roundGauge.needleStyleSource === model.source ? "#444" : "transparent"
+                        radius: 4
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.left: parent.left
+                            anchors.leftMargin: 8
+                            text: model.name
+                            color: "white"
+                            font.pixelSize: 14
+                            font.bold: roundGauge.needleStyleSource === model.source
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                roundGauge.needleStyleSource = model.source
+                            }
+                        }
+                    }
+                }
+                RoundButton {
+                    text: Translator.translate("Close menu", Dashboard.language)
+                    font.bold: true
+                    font.pixelSize: 15
+                    width: parent.width - 12
+                    onClicked: {
+                        needlestylemenu.close()
+                        touchArea.enabled = true
+                    }
+                }
+            }
+        }
+    }
+
     Menu{
         id : datasourcemenue
         closePolicy :Popup.NoAutoClose

@@ -446,9 +446,11 @@ Rectangle {
 
     Item {
         id: menustructure
+        z: 9999
 
         Menu {
             id: popupmenu
+            z: 9999
             MenuItem {
                 text: Translator.translate("Change gauge size", Dashboard.language)
                 font.pixelSize: 15

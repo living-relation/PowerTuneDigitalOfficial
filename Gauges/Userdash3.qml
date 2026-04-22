@@ -118,7 +118,7 @@ Item {
                 if (dashvalue.textAt(0) === "Round gauge")
                 {
                     //console.log("create Round Gauge")
-                    CreateRoundgaugeScript.createRoundGauge(dashvalue.textAt(1),dashvalue.textAt(2),dashvalue.textAt(3),dashvalue.textAt(4),dashvalue.textAt(5),dashvalue.textAt(6),dashvalue.textAt(7),dashvalue.textAt(8),dashvalue.textAt(9),dashvalue.textAt(10),dashvalue.textAt(11),dashvalue.textAt(12),dashvalue.textAt(13),dashvalue.textAt(14),dashvalue.textAt(15),dashvalue.textAt(16),dashvalue.textAt(17),dashvalue.textAt(18),dashvalue.textAt(19),dashvalue.textAt(20),dashvalue.textAt(21),dashvalue.textAt(22),dashvalue.textAt(23),dashvalue.textAt(24),dashvalue.textAt(25),dashvalue.textAt(26),dashvalue.textAt(27),dashvalue.textAt(28),dashvalue.textAt(29),dashvalue.textAt(30),dashvalue.textAt(31),dashvalue.textAt(32),dashvalue.textAt(33),dashvalue.textAt(34),dashvalue.textAt(35),dashvalue.textAt(36),dashvalue.textAt(37),dashvalue.textAt(38),dashvalue.textAt(39),dashvalue.textAt(40),dashvalue.textAt(41),dashvalue.textAt(42),dashvalue.textAt(43),dashvalue.textAt(44),dashvalue.textAt(45),dashvalue.textAt(46),dashvalue.textAt(47),dashvalue.textAt(48),(dashvalue.textAt(49).toLowerCase() === 'true' ? true : false),(dashvalue.textAt(50).toLowerCase() === 'true' ? true : false),(dashvalue.textAt(51).toLowerCase() === 'true' ? true : false),dashvalue.textAt(52),dashvalue.textAt(53),dashvalue.textAt(54),dashvalue.textAt(55),(dashvalue.textAt(56).toLowerCase() === 'true' ? true : false),dashvalue.textAt(57),dashvalue.textAt(58),dashvalue.textAt(59),dashvalue.textAt(60),dashvalue.textAt(61),dashvalue.textAt(62),dashvalue.textAt(63),dashvalue.textAt(64),dashvalue.textAt(65),(dashvalue.textAt(66).toLowerCase() === 'true' ? true : false),dashvalue.textAt(67));
+                    CreateRoundgaugeScript.createRoundGauge(dashvalue.textAt(1),dashvalue.textAt(2),dashvalue.textAt(3),dashvalue.textAt(4),dashvalue.textAt(5),dashvalue.textAt(6),dashvalue.textAt(7),dashvalue.textAt(8),dashvalue.textAt(9),dashvalue.textAt(10),dashvalue.textAt(11),dashvalue.textAt(12),dashvalue.textAt(13),dashvalue.textAt(14),dashvalue.textAt(15),dashvalue.textAt(16),dashvalue.textAt(17),dashvalue.textAt(18),dashvalue.textAt(19),dashvalue.textAt(20),dashvalue.textAt(21),dashvalue.textAt(22),dashvalue.textAt(23),dashvalue.textAt(24),dashvalue.textAt(25),dashvalue.textAt(26),dashvalue.textAt(27),dashvalue.textAt(28),dashvalue.textAt(29),dashvalue.textAt(30),dashvalue.textAt(31),dashvalue.textAt(32),dashvalue.textAt(33),dashvalue.textAt(34),dashvalue.textAt(35),dashvalue.textAt(36),dashvalue.textAt(37),dashvalue.textAt(38),dashvalue.textAt(39),dashvalue.textAt(40),dashvalue.textAt(41),dashvalue.textAt(42),dashvalue.textAt(43),dashvalue.textAt(44),dashvalue.textAt(45),dashvalue.textAt(46),dashvalue.textAt(47),dashvalue.textAt(48),(dashvalue.textAt(49).toLowerCase() === 'true' ? true : false),(dashvalue.textAt(50).toLowerCase() === 'true' ? true : false),(dashvalue.textAt(51).toLowerCase() === 'true' ? true : false),dashvalue.textAt(52),dashvalue.textAt(53),dashvalue.textAt(54),dashvalue.textAt(55),(dashvalue.textAt(56).toLowerCase() === 'true' ? true : false),dashvalue.textAt(57),dashvalue.textAt(58),dashvalue.textAt(59),dashvalue.textAt(60),dashvalue.textAt(61),dashvalue.textAt(62),dashvalue.textAt(63),dashvalue.textAt(64),dashvalue.textAt(65),(dashvalue.textAt(66).toLowerCase() === 'true' ? true : false),dashvalue.textAt(67),dashvalue.textAt(68));
                 }
 
                 if (dashvalue.textAt(0) === "Square gauge")
@@ -283,7 +283,7 @@ Item {
         color : "darkgrey"
         x :590
         y: 0
-        z:900
+        z: 9000
         visible: false
         MouseArea {
             id: touchArearpmbackroundselector
@@ -450,9 +450,9 @@ Item {
         width: mainwindow.width * 0.24 //200
         height: mainwindow.height * 0.83 //400
         color : "darkgrey"
-        x :590
+        x: mainwindow.width - width
         y: 0
-        z:900
+        z: 9000
         visible: false
         MouseArea {
             id: touchAreasquaregaugemenu
@@ -963,7 +963,7 @@ Item {
                                          userDash.children[i].peakneedletipwidth+","+
                                          userDash.children[i].peakneedleoffset+","+
                                          userDash.children[i].peakneedlevisible+","+
-                                         userDash.children[i].gaugeStyleIndex+"\r\n");
+                                         userDash.children[i].gaugeStyleIndex+","+userDash.children[i].needleStyleSource+"\r\n");
             }
             if (userDash.children[i].information === "State gauge")
             {
@@ -1068,7 +1068,8 @@ Item {
                                                         gaugelist.get(i).peakneedletipwidth,
                                                         gaugelist.get(i).peakneedleoffset,
                                                         gaugelist.get(i).peakneedlevisible,
-                                                        gaugelist.get(i).gaugeStyleIndex
+                                                        gaugelist.get(i).gaugeStyleIndex,
+                                                        gaugelist.get(i).needleStyleSource !== undefined ? gaugelist.get(i).needleStyleSource : ""
                                                         );
                 break;
             }
@@ -1257,7 +1258,8 @@ Item {
                                      "peakneedletipwidth":userDash.children[i].peakneedletipwidth,
                                      "peakneedleoffset":userDash.children[i].peakneedleoffset,
                                      "peakneedlevisible":userDash.children[i].peakneedlevisible,
-                                     "gaugeStyleIndex":userDash.children[i].gaugeStyleIndex
+                                     "gaugeStyleIndex":userDash.children[i].gaugeStyleIndex,
+                                     "needleStyleSource":userDash.children[i].needleStyleSource
                                  })
             }
 
@@ -1300,7 +1302,7 @@ Item {
         width: mainwindow.width * 0.625 //500
         color: "darkgrey"
         visible: false
-        z:900
+        z: 9000
 
         MouseArea {
             id: touchAreacolorselect
