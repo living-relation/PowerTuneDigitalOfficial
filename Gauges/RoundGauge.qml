@@ -224,8 +224,7 @@ Rectangle{
                     visible: roundGauge.needleStyleSource !== ""
                     width: roundGauge.needleTipWidth // Or appropriate math scaling base and tip
                     height: roundGauge.needleLength
-                    anchors.bottomMargin: roundGauge.needleInset
-                    anchors.fill: parent
+                    anchors.bottomMargin: roundGauge.needleinset
                     source: roundGauge.needleStyleSource
                     fillMode: Image.Stretch
                     smooth: true
