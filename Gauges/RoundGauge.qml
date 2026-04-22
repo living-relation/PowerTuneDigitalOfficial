@@ -168,8 +168,6 @@ Rectangle{
                 popupmenu.popup(touchArea.mouseX, touchArea.mouseY);
             }
         }
-        Component.onCompleted: {toggledecimal();
-            toggledecimal2();
         }
     }
 
