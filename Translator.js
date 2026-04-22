@@ -161,6 +161,7 @@ var translations = {
            "Description text": { en: "Description text", de: "Beschreibungs Text",  jp: "説明文字", es: "Texto de descripción", fr: "", ar:"" },
            "Close menu": { en: "Close menu", de: "Menü schliessen",  jp: "メニューを閉じる", es: "Cerrar menú", fr: "", ar:"" },
            "Gauge size": { en: "Gauge size", de: "Anzeigen Größe",  jp: "メーターサイズ", es: "Tamaño del calibre", fr: "", ar:"" },
+           "Gauge style": { en: "Gauge style", de: "Anzeigen Stil",  jp: "メータースタイル", es: "Estilo del calibre", fr: "", ar:"" },
            "Background color": { en: "Background color", de: "Hintergrund Farbe",  jp: "背景色", es: "Color de fondo", fr: "", ar:"" },
            "Outer ring visible": { en: "Outer ring visible", de: "Ring Sichtbarkeit",  jp: "外輪可視", es: "Anillo exterior visible", fr: "", ar:"" },
            "Needle button visible": { en: "Needle button visible", de: "Knopf Sichtbarkeit",  jp: "針のボタン可視", es: "Botón de aguja visible", fr: "", ar:"" },

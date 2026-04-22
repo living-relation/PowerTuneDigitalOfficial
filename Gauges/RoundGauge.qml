@@ -89,6 +89,15 @@ Rectangle{
     property string peakneedleoffset
     property string peakneedlevisible
 
+    // Visual style preset. 0 = Classic (existing look, fully backwards
+    // compatible). New saves append this field; older saves that lack it
+    // simply coerce to 0. Styles are layered on top of the base renderer
+    // without altering tickmark geometry or value mapping.
+    //   0 Classic, 1 Carbon, 2 Neon Glow, 3 Racing Digital, 4 Modern Flat
+    property int gaugeStyleIndex: 0
+
+    readonly property var gaugeStyleNames: ["Classic", "Carbon", "Neon Glow", "Racing Digital", "Modern Flat"]
+
     Drag.active: true
     DatasourcesList{id: powertunedatasource}
 
@@ -268,6 +277,96 @@ Rectangle{
                 color: backroundcolor
                 anchors.centerIn: parent
                 radius: 360
+
+                // Non-destructive style overlays. These only paint additional
+                // visuals on top of the user-selected background colour; the
+                // tickmarks, labels and needle remain unchanged so that
+                // existing dashboards render identically when style index is 0.
+                Canvas {
+                    id: styleBackgroundCanvas
+                    anchors.fill: parent
+                    visible: gaugeStyleIndex > 0
+                    Connections {
+                        target: roundGauge
+                        onGaugeStyleIndexChanged: styleBackgroundCanvas.requestPaint()
+                    }
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.reset();
+                        var cx = width / 2;
+                        var cy = height / 2;
+                        var r  = Math.min(width, height) / 2;
+                        switch (gaugeStyleIndex) {
+                        case 1: { // Carbon — dark radial vignette with a subtle diagonal weave
+                            var g = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r);
+                            g.addColorStop(0, Qt.rgba(0.18, 0.18, 0.2, 1));
+                            g.addColorStop(1, Qt.rgba(0.05, 0.05, 0.06, 1));
+                            ctx.beginPath();
+                            ctx.fillStyle = g;
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.04);
+                            ctx.lineWidth = 1;
+                            var step = Math.max(6, r / 30);
+                            for (var i = -r; i < r; i += step) {
+                                ctx.beginPath();
+                                ctx.moveTo(cx - r, cy + i);
+                                ctx.lineTo(cx + r, cy + i - r);
+                                ctx.stroke();
+                            }
+                            break;
+                        }
+                        case 2: { // Neon Glow — dark core, glowing outer halo
+                            var g2 = ctx.createRadialGradient(cx, cy, r * 0.3, cx, cy, r);
+                            g2.addColorStop(0, Qt.rgba(0.04, 0.06, 0.1, 1));
+                            g2.addColorStop(0.9, Qt.rgba(0.02, 0.03, 0.06, 1));
+                            g2.addColorStop(1, Qt.rgba(0, 1, 1, 0.35));
+                            ctx.beginPath();
+                            ctx.fillStyle = g2;
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            break;
+                        }
+                        case 3: { // Racing Digital — flat near-black with hex grid
+                            ctx.beginPath();
+                            ctx.fillStyle = Qt.rgba(0.05, 0.05, 0.07, 1);
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.06);
+                            ctx.lineWidth = 1;
+                            var sHex = Math.max(8, r / 14);
+                            for (var x = -r; x < r; x += sHex * 1.5) {
+                                for (var y = -r; y < r; y += sHex * 1.732) {
+                                    var px = cx + x;
+                                    var py = cy + y + ((Math.floor(x / (sHex * 1.5)) % 2) ? sHex * 0.866 : 0);
+                                    if (Math.sqrt((px - cx) * (px - cx) + (py - cy) * (py - cy)) > r) continue;
+                                    ctx.beginPath();
+                                    for (var k = 0; k < 6; k++) {
+                                        var ang = (Math.PI / 3) * k;
+                                        var hx = px + sHex * 0.5 * Math.cos(ang);
+                                        var hy = py + sHex * 0.5 * Math.sin(ang);
+                                        if (k === 0) ctx.moveTo(hx, hy);
+                                        else ctx.lineTo(hx, hy);
+                                    }
+                                    ctx.closePath();
+                                    ctx.stroke();
+                                }
+                            }
+                            break;
+                        }
+                        case 4: { // Modern Flat — soft radial gradient, no pattern
+                            var g3 = ctx.createRadialGradient(cx, cy * 0.7, r * 0.1, cx, cy, r);
+                            g3.addColorStop(0, Qt.rgba(0.25, 0.27, 0.3, 1));
+                            g3.addColorStop(1, Qt.rgba(0.1, 0.11, 0.13, 1));
+                            ctx.beginPath();
+                            ctx.fillStyle = g3;
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            break;
+                        }
+                        }
+                    }
+                }
                 Text{id: gaugedescription
                     x:  ((roundGauge.height / 100 ) *desctextx).toFixed(0)
                     y:  ((roundGauge.height / 100 ) *desctexty).toFixed(0)
@@ -389,6 +488,68 @@ Rectangle{
         anchors.fill: parent
         visible: ringvisible
         source: "qrc:/graphics/RoungGaugeRing.png"
+    }
+
+    // Overlay ring accents driven by the selected gauge style. Rendered above
+    // the default ring image so it works whether or not the user has the
+    // outer ring PNG enabled. Classic (0) renders nothing here.
+    Canvas {
+        id: styleOverlayCanvas
+        anchors.fill: parent
+        visible: gaugeStyleIndex > 0
+        Connections {
+            target: roundGauge
+            onGaugeStyleIndexChanged: styleOverlayCanvas.requestPaint()
+        }
+        onPaint: {
+            var ctx = getContext("2d");
+            ctx.reset();
+            var cx = width / 2;
+            var cy = height / 2;
+            var r  = Math.min(width, height) / 2;
+            switch (gaugeStyleIndex) {
+            case 2: { // Neon Glow — cyan outer ring + faint inner halo
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0, 1, 1, 0.85);
+                ctx.lineWidth = Math.max(2, r * 0.04);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0.2, 1, 1, 0.25);
+                ctx.lineWidth = Math.max(4, r * 0.09);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            case 3: { // Racing Digital — thin red accent ring
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0.9, 0.05, 0.1, 1);
+                ctx.lineWidth = Math.max(2, r * 0.025);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            case 4: { // Modern Flat — soft light bevel
+                var g = ctx.createLinearGradient(0, 0, 0, height);
+                g.addColorStop(0, Qt.rgba(1, 1, 1, 0.18));
+                g.addColorStop(1, Qt.rgba(0, 0, 0, 0.2));
+                ctx.beginPath();
+                ctx.strokeStyle = g;
+                ctx.lineWidth = Math.max(2, r * 0.03);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            case 1: { // Carbon — darker edge
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0, 0, 0, 0.8);
+                ctx.lineWidth = Math.max(2, r * 0.025);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            }
+        }
     }
     Item {
         id: menustructure
@@ -632,6 +793,27 @@ Rectangle{
                     width: backroundcolorselect.width
                     height: backroundcolorselect.height
                     color:  backroundcolorselect.currentText
+                }
+            }
+
+            Text {
+                text: Translator.translate("Gauge style", Dashboard.language)
+                font.bold: true
+                font.pixelSize: 15}
+
+            ComboBox {
+                id: gaugeStyleSelect
+                width: popupmenu.width /1.07
+                model: gaugeStyleNames
+                font.pixelSize: 15
+                currentIndex: gaugeStyleIndex
+                onCurrentIndexChanged: {
+                    gaugeStyleIndex = gaugeStyleSelect.currentIndex;
+                }
+                delegate: ItemDelegate {
+                    width: gaugeStyleSelect.width
+                    font.pixelSize: 15
+                    text: modelData
                 }
             }
 
