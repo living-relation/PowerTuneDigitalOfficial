@@ -60,7 +60,6 @@ Item {
         }
         
         }
-    }
     Timer {
         id: timerDoubleClick
         interval: 500
