@@ -58,8 +58,7 @@ Item {
                 Connect.readavailablebackrounds();
             }
         }
-        Component.onCompleted: {toggledecimal();
-            toggledecimal2();
+        
         }
     }
     Timer {
