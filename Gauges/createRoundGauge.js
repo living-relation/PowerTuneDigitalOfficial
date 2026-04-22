@@ -8,8 +8,15 @@ function createRoundGauge(setWidth,setX,setY,setmainvaluename,setmaxvalue,setmin
         //console.log("round gauge ready");
         finishCreation(setWidth,setX,setY,setmainvaluename,setmaxvalue,setminvalue,setwarnvaluehigh,setwarnvaluelow,setstartangle,setendangle,setredareastart,setdivider,settickmarksteps,setminortickmarksteps,setsetlabelsteps,setdecimalpoints,setneedleinset,setsetlabelinset,setsetminortickmarkinset,setsetmajortickmarkinset,setminortickmarkheight,setminortickmarkwidth,settickmarkheight,settickmarkwidth,settrailhighboarder,settrailmidboarder,settraillowboarder,settrailbottomboarder,setlabelfontsize,setneedleTipWidth,setneedleLength,setneedleBaseWidth,setredareainset,setredareawidth,setneedlecolor,setneedlecolor2,setbackroundcolor,setwarningcolor,setminortickmarkcoloractive,setminortickmarkcolorinactive,setmajortickmarkcoloractive,setmajortickmarkcolorinactive,setlabelcoloractive,setlabelcolorinactive,setouterneedlecolortrailsave,setmiddleneedlecortrailsave,setlowerneedlecolortrailsave,setinnerneedlecolortrailsave,setneedlevisible,setringvisible,setneedlecentervisisble,setlabelfont,setdesctextx,setdesctexty,setdesctextfontsize,setdesctextfontbold,setdesctextfonttype,setdesctextdisplaytext,setdesctextdisplaytextcolor,setpeakneedlecolor,setpeakneedlecolor2,setpeakneedlelenght,setpeakneedlebasewidth,setpeakneedletipwidth,setpeakneedleoffset,setpeakneedlevisible,setneedleStyleSource);
     }
-     else
-        component.statusChanged.connect(finishCreation);
+    else {
+        function onStatusChanged() {
+            if (component.status === Component.Ready) {
+                component.statusChanged.disconnect(onStatusChanged);
+                finishCreation.apply(null, capturedArgs);
+            }
+        }
+        component.statusChanged.connect(onStatusChanged);
+    }
 }
 
 function finishCreation(setWidth,setX,setY,setmainvaluename,setmaxvalue,setminvalue,setwarnvaluehigh,setwarnvaluelow,setstartangle,setendangle,setredareastart,setdivider,settickmarksteps,setminortickmarksteps,setsetlabelsteps,setdecimalpoints,setneedleinset,setsetlabelinset,setsetminortickmarkinset,setsetmajortickmarkinset,setminortickmarkheight,setminortickmarkwidth,settickmarkheight,settickmarkwidth,settrailhighboarder,settrailmidboarder,settraillowboarder,settrailbottomboarder,setlabelfontsize,setneedleTipWidth,setneedleLength,setneedleBaseWidth,setredareainset,setredareawidth,setneedlecolor,setneedlecolor2,setbackroundcolor,setwarningcolor,setminortickmarkcoloractive,setminortickmarkcolorinactive,setmajortickmarkcoloractive,setmajortickmarkcolorinactive,setlabelcoloractive,setlabelcolorinactive,setouterneedlecolortrailsave,setmiddleneedlecortrailsave,setlowerneedlecolortrailsave,setinnerneedlecolortrailsave,setneedlevisible,setringvisible,setneedlecentervisisble,setlabelfont,setdesctextx,setdesctexty,setdesctextfontsize,setdesctextfontbold,setdesctextfonttype,setdesctextdisplaytext,setdesctextdisplaytextcolor,setpeakneedlecolor,setpeakneedlecolor2,setpeakneedlelenght,setpeakneedlebasewidth,setpeakneedletipwidth,setpeakneedleoffset,setpeakneedlevisible,setneedleStyleSource,setgaugeStyleIndex) {
