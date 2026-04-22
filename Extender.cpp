@@ -6,7 +6,6 @@
   \brief request and receive messages from Haltech via CAN Haltech CAN Protocol V2
   \author Markus Ippy
  */
-
 #include "Extender.h"
 #include "dashboard.h"
 #include <QtEndian>
@@ -45,7 +44,7 @@ Extender::~Extender()
 {
 }
 
-void Extender::openCAN(const int &ExtenderBaseID,const int &RPMCANBaseID)
+void Extender::openCAN(const int &ExtenderBaseID, const int &RPMCANBaseID)
 {
 
 
@@ -58,10 +57,10 @@ void Extender::openCAN(const int &ExtenderBaseID,const int &RPMCANBaseID)
     {
         QString errorString;
         m_canDevice = QCanBus::instance()->createDevice(QStringLiteral("socketcan"),
-                                                                       QStringLiteral("can0"),&errorString);
+                                                                       QStringLiteral("can0"), &errorString);
 
-        if (!m_canDevice) {
-            //qDebug() << ("Error creating device");
+        if (m_canDevice->connectDevice())
+            // qDebug() << ("Error creating device");
             return;
         }
 
