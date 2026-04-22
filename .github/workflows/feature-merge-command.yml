@@ -1,0 +1,243 @@
+name: Feature branch merge command
+
+on:
+  issue_comment:
+    types:
+      - created
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  parse-command:
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.parse.outputs.mode }}
+      authorized: ${{ steps.parse.outputs.authorized }}
+      source_branch: ${{ steps.parse.outputs.source_branch }}
+      target_branch: ${{ steps.parse.outputs.target_branch }}
+      delete_branch: ${{ steps.parse.outputs.delete_branch }}
+      command_name: ${{ steps.parse.outputs.command_name }}
+    steps:
+      - name: Parse feature command
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = (context.payload.comment?.body || "").trim();
+            const username = context.actor;
+            const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username,
+            });
+
+            const allowedPermissions = new Set(["admin", "maintain", "write"]);
+            const isAuthorized = allowedPermissions.has(permission.permission);
+            core.setOutput("authorized", isAuthorized ? "true" : "false");
+
+            if (!isAuthorized) {
+              core.setOutput("mode", "none");
+              return;
+            }
+
+            if (/^\/feature-branches$/i.test(body)) {
+              core.setOutput("mode", "list");
+              core.setOutput("command_name", "/feature-branches");
+              return;
+            }
+
+            const commandPattern = /^\/merge-feature\s+([A-Za-z0-9._\/-]+)\s+into\s+([A-Za-z0-9._\/-]+)\s+delete\s+([A-Za-z0-9._\/-]+)$/i;
+            const match = body.match(commandPattern);
+
+            if (!match) {
+              core.setOutput("mode", "none");
+              return;
+            }
+
+            const sourceBranch = match[1];
+            const targetBranch = match[2];
+            const deleteBranch = match[3];
+
+            core.setOutput("mode", "merge");
+            core.setOutput("source_branch", sourceBranch);
+            core.setOutput("target_branch", targetBranch);
+            core.setOutput("delete_branch", deleteBranch);
+            core.setOutput("command_name", "/merge-feature <source> into <target> delete <branch>");
+
+  list-branches:
+    needs: parse-command
+    if: ${{ needs.parse-command.outputs.authorized == 'true' && needs.parse-command.outputs.mode == 'list' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all branches
+        run: git fetch --all --prune
+
+      - name: Build branch list
+        id: list
+        run: |
+          echo "available<<EOF" >> "$GITHUB_OUTPUT"
+          git for-each-ref --format='%(refname:short)' refs/remotes/origin | sed 's#^origin/##' | grep -v '^HEAD$' | sort -u >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Comment with available branches
+        uses: actions/github-script@v7
+        env:
+          AVAILABLE_BRANCHES: ${{ steps.list.outputs.available }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = [
+              "### Available branches",
+              "```text",
+              process.env.AVAILABLE_BRANCHES || "(unavailable)",
+              "```",
+              "",
+              "Use:",
+              "`/merge-feature <source> into <target> delete <source-or-target>`",
+            ].join("\n");
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+  merge-feature:
+    needs: parse-command
+    if: ${{ needs.parse-command.outputs.authorized == 'true' && needs.parse-command.outputs.mode == 'merge' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch all branches
+        run: git fetch --all --prune
+
+      - name: List available branches
+        id: list
+        run: |
+          echo "available<<EOF" >> "$GITHUB_OUTPUT"
+          git for-each-ref --format='%(refname:short)' refs/remotes/origin | sed 's#^origin/##' | grep -v '^HEAD$' | sort -u >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Validate requested branches exist
+        env:
+          SOURCE_BRANCH: ${{ needs.parse-command.outputs.source_branch }}
+          TARGET_BRANCH: ${{ needs.parse-command.outputs.target_branch }}
+          DELETE_BRANCH: ${{ needs.parse-command.outputs.delete_branch }}
+        run: |
+          if [ "$SOURCE_BRANCH" = "$TARGET_BRANCH" ]; then
+            echo "Source and target must be different branches."
+            exit 1
+          fi
+
+          if [ "$SOURCE_BRANCH" = "main" ] || [ "$TARGET_BRANCH" = "main" ]; then
+            echo "This command is for feature-to-feature merges only; source/target cannot be main."
+            exit 1
+          fi
+
+          if [ "$DELETE_BRANCH" != "$SOURCE_BRANCH" ] && [ "$DELETE_BRANCH" != "$TARGET_BRANCH" ]; then
+            echo "Delete branch must be either source or target."
+            exit 1
+          fi
+
+          if [ "$DELETE_BRANCH" = "main" ]; then
+            echo "Refusing to delete main branch."
+            exit 1
+          fi
+
+          for branch in "$SOURCE_BRANCH" "$TARGET_BRANCH" "$DELETE_BRANCH"; do
+            if ! git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+              echo "Branch '$branch' was not found on origin."
+              exit 1
+            fi
+          done
+
+      - name: Diff source and target branches
+        id: diff
+        env:
+          SOURCE_BRANCH: ${{ needs.parse-command.outputs.source_branch }}
+          TARGET_BRANCH: ${{ needs.parse-command.outputs.target_branch }}
+        run: |
+          DIFF_FILES="$(git diff --name-only "origin/$TARGET_BRANCH..origin/$SOURCE_BRANCH")"
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          if [ -z "$DIFF_FILES" ]; then
+            echo "(no file differences)" >> "$GITHUB_OUTPUT"
+            echo "has_diff=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "$DIFF_FILES" >> "$GITHUB_OUTPUT"
+            echo "has_diff=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Merge source into target
+        if: ${{ steps.diff.outputs.has_diff == 'true' }}
+        env:
+          SOURCE_BRANCH: ${{ needs.parse-command.outputs.source_branch }}
+          TARGET_BRANCH: ${{ needs.parse-command.outputs.target_branch }}
+        run: |
+          git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
+          git merge --no-ff "origin/$SOURCE_BRANCH" -m "Merge branch '$SOURCE_BRANCH' into '$TARGET_BRANCH' via /merge-feature command"
+          git push origin "HEAD:$TARGET_BRANCH"
+
+      - name: Delete requested feature branch
+        env:
+          DELETE_BRANCH: ${{ needs.parse-command.outputs.delete_branch }}
+        run: |
+          git push origin --delete "$DELETE_BRANCH"
+
+      - name: Comment with merge results
+        uses: actions/github-script@v7
+        env:
+          SOURCE_BRANCH: ${{ needs.parse-command.outputs.source_branch }}
+          TARGET_BRANCH: ${{ needs.parse-command.outputs.target_branch }}
+          DELETE_BRANCH: ${{ needs.parse-command.outputs.delete_branch }}
+          HAS_DIFF: ${{ steps.diff.outputs.has_diff }}
+          DIFF_FILES: ${{ steps.diff.outputs.files }}
+          AVAILABLE_BRANCHES: ${{ steps.list.outputs.available }}
+          COMMAND_NAME: ${{ needs.parse-command.outputs.command_name }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const hasDiff = process.env.HAS_DIFF === "true";
+            const body = [
+              `✅ Command recognized: \`${process.env.COMMAND_NAME}\``,
+              "",
+              `- Source branch: \`${process.env.SOURCE_BRANCH}\``,
+              `- Target branch: \`${process.env.TARGET_BRANCH}\``,
+              `- Deleted branch: \`${process.env.DELETE_BRANCH}\``,
+              `- Diff detected before merge: ${hasDiff ? "yes" : "no"}`,
+              "",
+              "### Diff file list",
+              "```text",
+              process.env.DIFF_FILES || "(unavailable)",
+              "```",
+              "",
+              "### Available branches at runtime",
+              "```text",
+              process.env.AVAILABLE_BRANCHES || "(unavailable)",
+              "```",
+            ].join("\n");
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
