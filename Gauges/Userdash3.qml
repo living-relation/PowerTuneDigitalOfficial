@@ -118,7 +118,7 @@ Item {
                 if (dashvalue.textAt(0) === "Round gauge")
                 {
                     //console.log("create Round Gauge")
-                    CreateRoundgaugeScript.createRoundGauge(dashvalue.textAt(1),dashvalue.textAt(2),dashvalue.textAt(3),dashvalue.textAt(4),dashvalue.textAt(5),dashvalue.textAt(6),dashvalue.textAt(7),dashvalue.textAt(8),dashvalue.textAt(9),dashvalue.textAt(10),dashvalue.textAt(11),dashvalue.textAt(12),dashvalue.textAt(13),dashvalue.textAt(14),dashvalue.textAt(15),dashvalue.textAt(16),dashvalue.textAt(17),dashvalue.textAt(18),dashvalue.textAt(19),dashvalue.textAt(20),dashvalue.textAt(21),dashvalue.textAt(22),dashvalue.textAt(23),dashvalue.textAt(24),dashvalue.textAt(25),dashvalue.textAt(26),dashvalue.textAt(27),dashvalue.textAt(28),dashvalue.textAt(29),dashvalue.textAt(30),dashvalue.textAt(31),dashvalue.textAt(32),dashvalue.textAt(33),dashvalue.textAt(34),dashvalue.textAt(35),dashvalue.textAt(36),dashvalue.textAt(37),dashvalue.textAt(38),dashvalue.textAt(39),dashvalue.textAt(40),dashvalue.textAt(41),dashvalue.textAt(42),dashvalue.textAt(43),dashvalue.textAt(44),dashvalue.textAt(45),dashvalue.textAt(46),dashvalue.textAt(47),dashvalue.textAt(48),(dashvalue.textAt(49).toLowerCase() === 'true' ? true : false),(dashvalue.textAt(50).toLowerCase() === 'true' ? true : false),(dashvalue.textAt(51).toLowerCase() === 'true' ? true : false),dashvalue.textAt(52),dashvalue.textAt(53),dashvalue.textAt(54),dashvalue.textAt(55),(dashvalue.textAt(56).toLowerCase() === 'true' ? true : false),dashvalue.textAt(57),dashvalue.textAt(58),dashvalue.textAt(59),dashvalue.textAt(60),dashvalue.textAt(61),dashvalue.textAt(62),dashvalue.textAt(63),dashvalue.textAt(64),dashvalue.textAt(65),(dashvalue.textAt(66).toLowerCase() === 'true' ? true : false));
+                    CreateRoundgaugeScript.createRoundGauge(dashvalue.textAt(1),dashvalue.textAt(2),dashvalue.textAt(3),dashvalue.textAt(4),dashvalue.textAt(5),dashvalue.textAt(6),dashvalue.textAt(7),dashvalue.textAt(8),dashvalue.textAt(9),dashvalue.textAt(10),dashvalue.textAt(11),dashvalue.textAt(12),dashvalue.textAt(13),dashvalue.textAt(14),dashvalue.textAt(15),dashvalue.textAt(16),dashvalue.textAt(17),dashvalue.textAt(18),dashvalue.textAt(19),dashvalue.textAt(20),dashvalue.textAt(21),dashvalue.textAt(22),dashvalue.textAt(23),dashvalue.textAt(24),dashvalue.textAt(25),dashvalue.textAt(26),dashvalue.textAt(27),dashvalue.textAt(28),dashvalue.textAt(29),dashvalue.textAt(30),dashvalue.textAt(31),dashvalue.textAt(32),dashvalue.textAt(33),dashvalue.textAt(34),dashvalue.textAt(35),dashvalue.textAt(36),dashvalue.textAt(37),dashvalue.textAt(38),dashvalue.textAt(39),dashvalue.textAt(40),dashvalue.textAt(41),dashvalue.textAt(42),dashvalue.textAt(43),dashvalue.textAt(44),dashvalue.textAt(45),dashvalue.textAt(46),dashvalue.textAt(47),dashvalue.textAt(48),(dashvalue.textAt(49).toLowerCase() === 'true' ? true : false),(dashvalue.textAt(50).toLowerCase() === 'true' ? true : false),(dashvalue.textAt(51).toLowerCase() === 'true' ? true : false),dashvalue.textAt(52),dashvalue.textAt(53),dashvalue.textAt(54),dashvalue.textAt(55),(dashvalue.textAt(56).toLowerCase() === 'true' ? true : false),dashvalue.textAt(57),dashvalue.textAt(58),dashvalue.textAt(59),dashvalue.textAt(60),dashvalue.textAt(61),dashvalue.textAt(62),dashvalue.textAt(63),dashvalue.textAt(64),dashvalue.textAt(65),(dashvalue.textAt(66).toLowerCase() === 'true' ? true : false),dashvalue.textAt(67));
                 }
 
                 if (dashvalue.textAt(0) === "Square gauge")
@@ -283,13 +283,36 @@ Item {
         color : "darkgrey"
         x :590
         y: 0
-        z:200
+        z:900
         visible: false
         MouseArea {
             id: touchArearpmbackroundselector
             anchors.fill:parent
             drag.target: rpmbackroundselector
         }
+        // Dedicated drag grip so the RPM/background menu stays easy to grab on touch.
+        Rectangle {
+            id: rpmbackroundselectorDragHandle
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 22
+            radius: 4
+            color: Qt.rgba(0.2, 0.2, 0.3, 0.85)
+            z: 2
+            Rectangle {
+                anchors.centerIn: parent
+                width: 40
+                height: 4
+                radius: 2
+                color: Qt.rgba(1, 1, 1, 0.6)
+            }
+            MouseArea {
+                anchors.fill: parent
+                drag.target: rpmbackroundselector
+            }
+        }
+
         Grid{
             rows:10
             columns: 1
@@ -390,7 +413,7 @@ Item {
 
             }
             Text {
-                text: "Extra "//Translator.translate("Extra: ", Dashboard.language)
+                text: Translator.translate("Extra", Dashboard.language)
                 font.pixelSize: mainwindow.width * 0.018
                 font.bold: true
             }
@@ -399,7 +422,7 @@ Item {
                 width: mainwindow.width * 0.25 //200
                 height: mainwindow.height * 0.083 //40
                 font.pixelSize: mainwindow.width * 0.018//15
-                model: [Translator.translate(Translator.translate("None", Dashboard.language), Dashboard.language), "PFC Sensors"]
+                model: [Translator.translate("None", Dashboard.language), "PFC Sensors"]
                 onCurrentIndexChanged: setextra();
                 delegate: ItemDelegate {
                     width: extraSelector.width
@@ -429,13 +452,36 @@ Item {
         color : "darkgrey"
         x :590
         y: 0
-        z:200
+        z:900
         visible: false
         MouseArea {
             id: touchAreasquaregaugemenu
             anchors.fill:parent
             drag.target: squaregaugemenu
         }
+        // Dedicated drag grip so the gauge-creation menu stays easy to grab on touch.
+        Rectangle {
+            id: squaregaugemenuDragHandle
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 22
+            radius: 4
+            color: Qt.rgba(0.2, 0.2, 0.3, 0.85)
+            z: 2
+            Rectangle {
+                anchors.centerIn: parent
+                width: 40
+                height: 4
+                radius: 2
+                color: Qt.rgba(1, 1, 1, 0.6)
+            }
+            MouseArea {
+                anchors.fill: parent
+                drag.target: squaregaugemenu
+            }
+        }
+
 ///////////////////
         /*
         //Combobox filtered by ECU. Datasources must still be filled with each supported ECU
@@ -594,7 +640,7 @@ Item {
                 text: Translator.translate("Text", Dashboard.language)
                 font.pixelSize: mainwindow.width * 0.015
                 onClicked: {
-                    CreateTextScript.createText(100,50,"Textelement","Lato",15,"red","",true,0,20000,-20000)
+                    CreateTextScript.createText(100,50,"Text element","Lato",15,"red","",true,0,20000,-20000)
                     squaregaugemenu.visible = false;
                     selectcolor.visible =false;
                     Dashboard.setdraggable(0);
@@ -916,7 +962,8 @@ Item {
                                          userDash.children[i].peakneedlebasewidth+","+
                                          userDash.children[i].peakneedletipwidth+","+
                                          userDash.children[i].peakneedleoffset+","+
-                                         userDash.children[i].peakneedlevisible+"\r\n");
+                                         userDash.children[i].peakneedlevisible+","+
+                                         userDash.children[i].gaugeStyleIndex+"\r\n");
             }
             if (userDash.children[i].information === "State gauge")
             {
@@ -1020,7 +1067,8 @@ Item {
                                                         gaugelist.get(i).peakneedlebasewidth,
                                                         gaugelist.get(i).peakneedletipwidth,
                                                         gaugelist.get(i).peakneedleoffset,
-                                                        gaugelist.get(i).peakneedlevisible
+                                                        gaugelist.get(i).peakneedlevisible,
+                                                        gaugelist.get(i).gaugeStyleIndex
                                                         );
                 break;
             }
@@ -1208,7 +1256,8 @@ Item {
                                      "peakneedlebasewidth":userDash.children[i].peakneedlebasewidth,
                                      "peakneedletipwidth":userDash.children[i].peakneedletipwidth,
                                      "peakneedleoffset":userDash.children[i].peakneedleoffset,
-                                     "peakneedlevisible":userDash.children[i].peakneedlevisible
+                                     "peakneedlevisible":userDash.children[i].peakneedlevisible,
+                                     "gaugeStyleIndex":userDash.children[i].gaugeStyleIndex
                                  })
             }
 
@@ -1251,12 +1300,36 @@ Item {
         width: mainwindow.width * 0.625 //500
         color: "darkgrey"
         visible: false
+        z:900
 
         MouseArea {
             id: touchAreacolorselect
             anchors.fill:parent
             drag.target: selectcolor
         }
+        // Dedicated drag grip so the color picker menu stays easy to grab on touch.
+        Rectangle {
+            id: selectcolorDragHandle
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 22
+            radius: 4
+            color: Qt.rgba(0.2, 0.2, 0.3, 0.85)
+            z: 2
+            Rectangle {
+                anchors.centerIn: parent
+                width: 40
+                height: 4
+                radius: 2
+                color: Qt.rgba(1, 1, 1, 0.6)
+            }
+            MouseArea {
+                anchors.fill: parent
+                drag.target: selectcolor
+            }
+        }
+
 
         Grid{
             rows:5

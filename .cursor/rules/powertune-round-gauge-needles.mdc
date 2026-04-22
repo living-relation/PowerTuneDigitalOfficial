@@ -12,11 +12,17 @@ alwaysApply: false
 
 ## `.txt` / `createRoundGauge` schema
 
-- **Round gauge** rows are **fixed-order CSV**; import calls **`CreateRoundgaugeScript.createRoundGauge(dashvalue.textAt(1)…textAt(66))`** in `Userdash1.qml` (mirror in 2/3).
+- **Round gauge** rows are **fixed-order CSV**; import calls **`CreateRoundgaugeScript.createRoundGauge(dashvalue.textAt(1)…textAt(67))`** in `Userdash1.qml` (mirror in 2/3). The last column, `textAt(67)`, is `gaugeStyleIndex`.
 - **`saveDashtofile()`** appends the same fields for `"Round gauge"`; **`createDash()`** replays **`gaugelist`** into `createRoundGauge`.
+- Current trailing fields: `…peakneedleoffset, peakneedlevisible, gaugeStyleIndex`.
+
+## Gauge style presets
+
+- **`gaugeStyleIndex`** (int, default `0`) selects a visual preset layered on top of the base renderer without altering tickmark/label/needle geometry. `0 Classic` is the legacy look; `1 Carbon`, `2 Neon Glow`, `3 Racing Digital`, `4 Modern Flat` add background + ring overlays painted via `styleBackgroundCanvas` and `styleOverlayCanvas` in `RoundGauge.qml`.
+- When a style needs a value-driven repaint, subscribe the new Canvas to `onGaugeStyleIndexChanged: requestPaint()` in the same style as the existing `redcanvas` / `needletrail`.
 
 ## Extending (e.g. PNG/SVG needle) without breaking old `.txt`
 
-- **Append-only** new columns **after** the last field (`peakneedlevisible`); on import, **default** when `dashvalue.count` is too small.
+- **Append-only** new columns **after** the current last field (`gaugeStyleIndex`); on import, **default** when `dashvalue.count` is too small (e.g. wrap a `parseInt` / `toLowerCase()===true` coercion around the raw `textAt(N)`).
 - **`createRoundGauge.js`**: pass new props into `createObject`; **`RoundGauge.qml`**: e.g. `Item` root → **Canvas (mode 0)** vs **`Image` (mode 1)**; map existing length/base/tip/inset to image geometry.
 - Prefer **PNG** for `Image`; SVG depends on Qt image plugins.
