@@ -11,7 +11,10 @@ Item {
     property int pictureheight
     //property int picturewidth
     property string increasedecreaseident
+    property int touchCounter: 0
+    property real lastTouchTime: 0
     Drag.active: true
+    z: changesize.visible ? 9000 : 0
     Component.onCompleted: togglemousearea();
 
     Connections{

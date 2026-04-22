@@ -80,7 +80,11 @@ Rectangle{
     property string desctextdisplaytextcolor
 
     // Needle style: "" = default canvas needle, otherwise SVG source path
+    // Needle style: "" = default canvas needle, otherwise SVG/PNG source path.
+    // A pure-numeric string (e.g. "0") is treated as canvas so a mis-mapped
+    // gaugeStyleIndex integer can never accidentally activate the image needle.
     property string needleStyleSource: ""
+    readonly property bool needleStyleActive: needleStyleSource !== "" && !(/^\d+$/.test(needleStyleSource))
 
     //peak needle
 
@@ -168,7 +172,6 @@ Rectangle{
                 popupmenu.popup(touchArea.mouseX, touchArea.mouseY);
             }
         }
-        }
     }
 
     Timer {
@@ -218,11 +221,11 @@ Rectangle{
                 antialiasing: true
                 color: "transparent"
 
-                // PNG needle: shown when a needle style is selected
+                // PNG/SVG needle: shown when a valid (non-empty, non-numeric) style path is set
                 // Respects the same geometry properties as Canvas needle
                 Image {
                     id: needlesvgimage
-                    visible: roundGauge.needleStyleSource !== ""
+                    visible: roundGauge.needleStyleActive
 
                     // Calculate dimensions from the same properties as Canvas needle
                     // needleLength is a percentage, convert to pixels relative to outerRadius
@@ -237,7 +240,7 @@ Rectangle{
                     sourceSize.width: width
                     sourceSize.height: height
 
-                    source: roundGauge.needleStyleSource
+                    source: roundGauge.needleStyleActive ? roundGauge.needleStyleSource : ""
                     fillMode: Image.Stretch
                     smooth: true
                     antialiasing: true
@@ -249,7 +252,7 @@ Rectangle{
                 // Canvas needle: shown when using default style
                 Canvas {
                     id: needlecanvas
-                    visible: roundGauge.needleStyleSource === ""
+                    visible: !roundGauge.needleStyleActive
                     anchors.centerIn: parent
                     implicitWidth: parent.width
                     implicitHeight: parent.height
