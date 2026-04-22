@@ -1,0 +1,13 @@
+---
+description: Disable generated merge automation rules unless explicitly requested
+alwaysApply: true
+---
+
+# Merge automation rules disabled
+
+Do not automatically run either of the following behaviors:
+
+1. `manual merge delete`
+2. `automatic merge and clean up`
+
+Only perform these behaviors when the user explicitly asks for them in the current request.
