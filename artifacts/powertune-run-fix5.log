@@ -1,0 +1,7 @@
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-ubuntu'
+QIODevice::write (QFile, "/sys/class/backlight/rpi_backlight/brightness"): device not open
+libpng warning: iCCP: profile 'ICC PROFILE': C01EB003h: exceeds application limits
+libpng warning: iCCP: CRC error
+qml: create Dashboard
+qrc:/main.qml:461:26: Unable to assign QQuickAnchorLine to QQuickItem*
+qrc:/main.qml:512:26: Unable to assign QQuickAnchorLine to QQuickItem*

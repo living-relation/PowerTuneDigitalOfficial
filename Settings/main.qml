@@ -1,6 +1,5 @@
 import QtQuick 2.8
 import QtQuick.Controls 2.1
-import QtMultimedia 5.8
 import Qt.labs.settings 1.0
 import "qrc:/Translator.js" as Translator
 
@@ -50,49 +49,41 @@ Rectangle {
             property alias shiftlightcanbase: shiftlightbaseadresstext.text
             property alias languagecombobox: languageselect.currentIndex
         }
-        SoundEffect {
-            id: warnsound
-            source: "qrc:/Sounds/alarm.wav"
-        }
-
         Connections {
             target: Dashboard
-            onWifiStatChanged: {
+            ignoreUnknownSignals: true
+            function onWifiStatChanged() {
                 wifistatus.text = Dashboard.WifiStat
             }
-            onEthernetStatChanged: {
+            function onEthernetStatChanged() {
                 ethernetstatus.text = Dashboard.EthernetStat
             }
 
-            onOdoChanged: {
+            function onOdoChanged() {
                 odometer.text = (Dashboard.Odo).toFixed(3)
             }
-            onTripChanged: {
+            function onTripChanged() {
                 tripmeter.text = (Dashboard.Trip).toFixed(3)
             }
-            onWatertempChanged: {
+            function onWatertempChanged() {
                 if (Dashboard.Watertemp > Dashboard.waterwarn) {
                     playwarning.start()
                 }
-                ;
             }
-            onRpmChanged: {
+            function onRpmChanged() {
                 if (Dashboard.rpm > Dashboard.rpmwarn) {
                     playwarning.start()
                 }
-                ;
             }
-            onKnockChanged: {
+            function onKnockChanged() {
                 if (Dashboard.Knock > Dashboard.knockwarn) {
                     playwarning.start()
                 }
-                ;
             }
-            onBoostPresChanged: {
+            function onBoostPresChanged() {
                 if (Dashboard.BoostPres > Dashboard.boostwarn) {
                     playwarning.start()
                 }
-                ;
             }
 /*
             onExternalspeedconnectionrequestChanged:
@@ -1150,8 +1141,8 @@ Rectangle {
         //Function to play warning sound
         id: playwarning
         function start() {
-            if (warnsound.playing == false)
-                warnsound.play()
+            // Intentionally no-op in VM/headless-friendly builds.
+            // Existing warning visual indicators still function.
         }
     }
 

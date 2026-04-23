@@ -173,13 +173,6 @@ ApplicationWindow {
 
     }
 
-    Connections{
-            target: Dashboard
-            onBrigtnessChanged: {
-            brightness.value = Dashboard.Brightness
-            }
-    }
-
     Item {
         id: name
         Component.onCompleted: Connect.checkifraspberrypi()
