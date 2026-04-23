@@ -58,6 +58,7 @@
         <file>graphics/Racedash.png</file>
         <file>Gauges/RPMBarStyle1.qml</file>
         <file>Gauges/RPMBARStyle2.qml</file>
+        <file>Gauges/RPMBarStyle5.qml</file>
         <file>OBDPIDS.qml</file>
         <file>ConsultRegs.qml</file>
         <file>GPSTracks/Laptimer.qml</file>

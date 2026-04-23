@@ -193,6 +193,11 @@ Item {
                 rpmbarloader.source = "qrc:/Gauges/RPMbar.qml"
                 break;
             }
+            case 5:
+            {
+                rpmbarloader.source = "qrc:/Gauges/RPMBarStyle5.qml"
+                break;
+            }
             }
         }
     }
@@ -331,7 +336,7 @@ Item {
                 width: mainwindow.width * 0.25 //200
                 height: mainwindow.height * 0.083 //40
                 font.pixelSize: mainwindow.width * 0.018 //15
-                model: [Translator.translate("None", Dashboard.language), Translator.translate("Style", Dashboard.language) + " 1",Translator.translate("Style", Dashboard.language) + " 2", Translator.translate("Style", Dashboard.language) + " 3", Translator.translate("Style", Dashboard.language) + " 4"]
+                model: [Translator.translate("None", Dashboard.language), Translator.translate("Style", Dashboard.language) + " 1",Translator.translate("Style", Dashboard.language) + " 2", Translator.translate("Style", Dashboard.language) + " 3", Translator.translate("Style", Dashboard.language) + " 4", Translator.translate("Style", Dashboard.language) + " 5"]
                 onCurrentIndexChanged: rpmgauge.selector();
                 delegate: ItemDelegate {
                     width: rpmstyleselector.width
