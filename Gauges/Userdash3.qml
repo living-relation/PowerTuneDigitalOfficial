@@ -553,11 +553,10 @@ Item {
         function sourceAllowedForProfile(sourceObj) {
             var ecus = (sourceObj.supportedECUs || "").toString();
             var isExtenderOnly = ecus.indexOf("Extender") !== -1;
-            var isPowerTuneOnly = ecus.indexOf("PowerTune") !== -1;
             if (activeSourceProfile === "CAN_ONLY") {
                 if (isCalculatedSource(sourceObj.sourcename))
                     return true;
-                return !isExtenderOnly && !isPowerTuneOnly;
+                return !isExtenderOnly;
             }
             return true;
         }

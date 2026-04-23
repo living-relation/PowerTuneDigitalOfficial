@@ -556,13 +556,12 @@ Item {
         function sourceAllowedForProfile(sourceObj) {
             var ecus = (sourceObj.supportedECUs || "").toString();
             var isExtenderOnly = ecus.indexOf("Extender") !== -1;
-            var isPowerTuneOnly = ecus.indexOf("PowerTune") !== -1;
             var isApexiOnly = ecus.indexOf("Apexi") !== -1 || ecus.indexOf("SAFC") !== -1;
             var isObdOnly = ecus.indexOf("OBD") !== -1;
             if (activeSourceProfile === "CAN_ONLY") {
                 if (isCalculatedSource(sourceObj.sourcename))
                     return true;
-                return !isExtenderOnly && !isPowerTuneOnly && !isApexiOnly && !isObdOnly;
+                return !isExtenderOnly && !isApexiOnly && !isObdOnly;
             }
             return true;
         }
