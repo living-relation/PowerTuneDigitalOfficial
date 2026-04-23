@@ -243,23 +243,7 @@ Item {
                 }
                 touchCounter = 0;
                 timerDoubleClick.stop();
-                btnbackround.visible = true;
-                savetofile.visible = true;
-                squaregaugemenu.visible =true;
-                btnopencolorselect.visible = true;
-                cbx_sources.visible = true;
-                btnaddSquare.visible = true;
-                btncancel.visible = true;
-                btnsave.visible = true;
-                btnclear.visible = true;
-                loadfromfile.visible = true;
-                squaregaugemenu.visible = true;
-                btnaddRound.visible = true;
-                btnaddText.visible = true;
-                btnaddPicture.visible = true;
-                btnaddStatePicture.visible = true;
-                btnaddStateGIF.visible = true;
-                btnaddBar.visible = true;
+                setEditorMode("edit");
                 Dashboard.setdraggable(1);
             }
         }
@@ -682,27 +666,7 @@ Item {
 
                 onClicked: {
                     Connect.readavailabledashfiles();
-                    btnaddRound.visible = false;
-                    btnaddText.visible = false;
-                    btnaddPicture.visible = false;
-                    btnaddStatePicture.visible = false;
-                    btnaddStateGIF.visible = false;
-                    btnaddBar.visible = false;
-                    btncancelload.visible = true;
-                    loadfromfile.visible = false;
-                    loadfileselect.visible = true;
-                    btnaddSquare.visible = false;
-                    btncancel.visible = false;
-                    cbx_sources.visible = false;
-                    btnsave.visible = false;
-                    btnclear.visible = false;
-                    selectcolor.visible = false;
-                    savetofile.visible = false;
-                    btnopencolorselect.visible = false;
-                    loadfromfile.visible = false;
-                    load.visible = true;
-                    selectcolor.visible =false;
-                    btnbackround.visible =false;
+                    setEditorMode("import");
                     savedash();
                 }
             }
@@ -735,10 +699,7 @@ Item {
                 font.pixelSize: mainwindow.width * 0.015
                 visible: false
                 onClicked: {
-                    loadfileselect.visible = false;
-                    btncancelload.visible = false;
-                    squaregaugemenu.visible = false;
-                    load.visible = false;
+                    setEditorMode("hidden");
                     selectcolor.visible =false;
                     Dashboard.setdraggable(0);
 
@@ -752,11 +713,8 @@ Item {
                 font.pixelSize: mainwindow.width * 0.015
                 visible: false
                 onClicked: {
-                    loadfileselect.visible = false;
                     Connect.setfilename2(loadfileselect.textAt(loadfileselect.currentIndex));
-                    btncancelload.visible = false;
-                    squaregaugemenu.visible = false;
-                    load.visible = false;
+                    setEditorMode("hidden");
                     selectcolor.visible =false;
                     Dashboard.setdraggable(0);
                     Connect.readdashsetup2();
@@ -813,6 +771,35 @@ Item {
         anchors.fill: parent
     }
     ///////////////////Functions
+    function setEditorMode(mode)
+    {
+        var isEdit = mode === "edit";
+        var isImport = mode === "import";
+
+        squaregaugemenu.visible = (isEdit || isImport);
+        selectcolor.visible = false;
+
+        cbx_sources.visible = isEdit;
+        btnaddSquare.visible = isEdit;
+        btnaddBar.visible = isEdit;
+        btnaddRound.visible = isEdit;
+        btnaddText.visible = isEdit;
+        btnaddPicture.visible = isEdit;
+        btnaddStatePicture.visible = isEdit;
+        btnaddStateGIF.visible = isEdit;
+        btnopencolorselect.visible = isEdit;
+        btnclear.visible = isEdit;
+        btnsave.visible = isEdit;
+        btncancel.visible = isEdit;
+        btnbackround.visible = isEdit;
+        savetofile.visible = isEdit;
+        loadfromfile.visible = isEdit;
+
+        loadfileselect.visible = isImport;
+        btncancelload.visible = isImport;
+        load.visible = isImport;
+    }
+
     function setextra()
     {
         switch (extraSelector.currentIndex){

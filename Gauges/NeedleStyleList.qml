@@ -62,4 +62,14 @@ ListModel {
         source: "qrc:/graphics/Needles/needle_turbo-blade.svg"
         isCanvas: false
     }
+    ListElement {
+        name: "Vector Racer"
+        source: "qrc:/graphics/Needles/needle_vector-racer.svg"
+        isCanvas: false
+    }
+    ListElement {
+        name: "Split Blade"
+        source: "qrc:/graphics/Needles/needle_split-blade.svg"
+        isCanvas: false
+    }
 }

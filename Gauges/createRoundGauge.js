@@ -96,8 +96,7 @@ function finishCreation(setWidth,setX,setY,setmainvaluename,setmaxvalue,setminva
                                            "desctextfontbold" : setdesctextfontbold,
                                            "desctextfonttype" : setdesctextfonttype,
                                            "desctextdisplaytext" : setdesctextdisplaytext,
-                                           "desctextdisplaytextcolor" : setdesctextdisplaytextcolor
-                                           /* Provision to implement a peak needle at a later stage
+                                           "desctextdisplaytextcolor" : setdesctextdisplaytextcolor,
                                            "peakneedlecolor" : setpeakneedlecolor,
                                            "peakneedlecolor2" : setpeakneedlecolor2,
                                            "peakneedlelenght" : setpeakneedlelenght,
@@ -105,7 +104,7 @@ function finishCreation(setWidth,setX,setY,setmainvaluename,setmaxvalue,setminva
                                            "peakneedletipwidth" : setpeakneedletipwidth,
                                            "peakneedleoffset" : setpeakneedleoffset,
                                            "peakneedlevisible" : setpeakneedlevisible
-                                           */
+
                                        });
 
         if (gauge === null) {

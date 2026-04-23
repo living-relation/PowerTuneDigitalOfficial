@@ -14,6 +14,9 @@ QVector<qreal>averageexanaloginput7(0);
 int avgspeed;
 int avgrpm;
 qreal avgexanaloginput7;
+qint64 averageSpeedSum = 0;
+qint64 averageRpmSum = 0;
+qreal averageExAnalogInput7Sum = 0;
 qreal R2 = 1430; // R2 is always Fixed ( Two resistors in line 1100 + 330 Ohms
 qreal R3 = 100;     // R2 is always Fixed ( Two resistors in line 1100 + 330 Ohms
 qreal R4 = 1000; // R2 is always Fixed ( Two resistors in line 1100 + 330 Ohms
@@ -980,11 +983,16 @@ void DashBoard::setrpm(const qreal &rpm)
     //Smoothing
     if (m_smoothrpm >0)
     {
-        averageRPM.removeFirst();
-        averageRPM.append(m_rpm);
-        avgrpm = 0;
-        for (int i = 0; i <= m_smoothrpm-1; i++){avgrpm+= averageRPM[i];}
-        m_rpm = avgrpm/m_smoothrpm;
+        if (averageRPM.size() != m_smoothrpm) {
+            averageRPM.fill(m_rpm, m_smoothrpm);
+            averageRpmSum = static_cast<qint64>(m_rpm) * m_smoothrpm;
+        } else {
+            averageRpmSum -= averageRPM.first();
+            averageRPM.removeFirst();
+            averageRPM.append(m_rpm);
+            averageRpmSum += m_rpm;
+        }
+        m_rpm = averageRpmSum / m_smoothrpm;
     }
         emit rpmChanged(rpm);
     }
@@ -1165,12 +1173,16 @@ void DashBoard::setSpeed(const qreal &speed)
     {m_speed = qRound((speed * 0.621371) * m_speedpercent);}
     if (m_smoothspeed != 0)
     {
-        averageSpeed.removeFirst();
-        averageSpeed.append(m_speed);
-        //qDebug() << "Vector Speed " << averageSpeed;
-        avgspeed = 0;
-        for (int i = 0; i <= m_smoothspeed-1; i++){avgspeed+= averageSpeed[i];}
-        m_speed = avgspeed/m_smoothspeed;
+        if (averageSpeed.size() != m_smoothspeed) {
+            averageSpeed.fill(m_speed, m_smoothspeed);
+            averageSpeedSum = static_cast<qint64>(m_speed) * m_smoothspeed;
+        } else {
+            averageSpeedSum -= averageSpeed.first();
+            averageSpeed.removeFirst();
+            averageSpeed.append(m_speed);
+            averageSpeedSum += m_speed;
+        }
+        m_speed = averageSpeedSum / m_smoothspeed;
         // qDebug() << "Average Speed " << m_speed;
     }
 if (m_ExternalSpeed == 0){
@@ -1188,12 +1200,16 @@ void DashBoard::setSerialSpeed(const qreal &speed)
     {m_speed = qRound(speed/m_pulsespermile * m_speedpercent);}
     if (m_smoothspeed != 0)
     {
-        averageSpeed.removeFirst();
-        averageSpeed.append(m_speed);
-        //qDebug() << "Vector Speed " << averageSpeed;
-        avgspeed = 0;
-        for (int i = 0; i <= m_smoothspeed-1; i++){avgspeed+= averageSpeed[i];}
-        m_speed = avgspeed/m_smoothspeed;
+        if (averageSpeed.size() != m_smoothspeed) {
+            averageSpeed.fill(m_speed, m_smoothspeed);
+            averageSpeedSum = static_cast<qint64>(m_speed) * m_smoothspeed;
+        } else {
+            averageSpeedSum -= averageSpeed.first();
+            averageSpeed.removeFirst();
+            averageSpeed.append(m_speed);
+            averageSpeedSum += m_speed;
+        }
+        m_speed = averageSpeedSum / m_smoothspeed;
         qDebug() << "Average Speed " << m_speed;
     }
     if (m_ExternalSpeed == 6){
@@ -3521,6 +3537,7 @@ void DashBoard::setsmoothrpm(const int &smoothrpm)
     else {m_smoothrpm = smoothrpm;}
     //qDebug()<<"SmoothRPM" << m_smoothrpm;
     averageRPM.resize(m_smoothrpm);
+    averageRpmSum = 0;
     emit smoothrpmChanged(smoothrpm);
 }
 void DashBoard::setsmoothspeed(const int &smoothspeed)
@@ -3531,6 +3548,7 @@ void DashBoard::setsmoothspeed(const int &smoothspeed)
     {m_smoothspeed = smoothspeed+1;}
     else {m_smoothspeed = smoothspeed;}
     averageSpeed.resize(m_smoothspeed);
+    averageSpeedSum = 0;
     //qDebug()<<"SmoothSpeed" << m_smoothrpm;
     emit smoothspeedChanged(smoothspeed);
 }
@@ -3544,6 +3562,7 @@ void DashBoard::setsmootexAnalogInput7(const int &smoothexAnalogInput7)
     {m_smoothexAnalogInput7 = smoothexAnalogInput7+1;}
     else {m_smoothexAnalogInput7 = smoothexAnalogInput7;}
     averageexanaloginput7.resize(m_smoothexAnalogInput7);
+    averageExAnalogInput7Sum = 0;
     //qDebug()<<"SmoothSpeed" << m_smoothrpm;
     emit smootexAnalogInput7Changed(smoothexAnalogInput7);
 }
@@ -4102,12 +4121,16 @@ void DashBoard::setEXAnalogInput7(const qreal &EXAnalogInput7)
     //qDebug() << "Smooth ? " << m_smoothexAnalogInput7;
     if (m_smoothexAnalogInput7 != 0)
     {
-        averageexanaloginput7.removeFirst();
-        averageexanaloginput7.append(m_EXAnalogInput7);
-        //qDebug() << "averageexanaloginput7 " << averageexanaloginput7;
-        avgexanaloginput7 = 0;
-        for (int i = 0; i <= m_smoothexAnalogInput7-1; i++){avgexanaloginput7+= averageexanaloginput7[i];}
-        m_EXAnalogInput7 = avgexanaloginput7/m_smoothexAnalogInput7;
+        if (averageexanaloginput7.size() != m_smoothexAnalogInput7) {
+            averageexanaloginput7.fill(m_EXAnalogInput7, m_smoothexAnalogInput7);
+            averageExAnalogInput7Sum = m_EXAnalogInput7 * m_smoothexAnalogInput7;
+        } else {
+            averageExAnalogInput7Sum -= averageexanaloginput7.first();
+            averageexanaloginput7.removeFirst();
+            averageexanaloginput7.append(m_EXAnalogInput7);
+            averageExAnalogInput7Sum += m_EXAnalogInput7;
+        }
+        m_EXAnalogInput7 = averageExAnalogInput7Sum / m_smoothexAnalogInput7;
     }
 
     emit EXAnalogInput7Changed(m_EXAnalogInput7);

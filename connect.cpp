@@ -56,6 +56,41 @@ QString selectedPort;
 QString dashfilename1;
 QString dashfilename2;
 QString dashfilename3;
+QStringList cachedPorts;
+
+static void normalizeLegacyDashRow(QStringList &list)
+{
+    if (list.isEmpty()) {
+        return;
+    }
+
+    // Keep positional compatibility: only trim trailing empties.
+    while (!list.isEmpty() && list.last().isEmpty()) {
+        list.removeLast();
+    }
+
+    const QString type = list.at(0);
+    int required = 0;
+    if (type == "Round gauge") {
+        required = 67;
+    } else if (type == "Square gauge") {
+        required = 29;
+    } else if (type == "Bar gauge") {
+        required = 12;
+    } else if (type == "Text label gauge") {
+        required = 12;
+    } else if (type == "gauge image") {
+        required = 5;
+    } else if (type == "State gauge") {
+        required = 8;
+    } else if (type == "State GIF") {
+        required = 9;
+    }
+
+    while (required > 0 && list.size() < required) {
+        list.append("");
+    }
+}
 
 Connect::Connect(QObject *parent) :
     QObject(parent),
@@ -250,7 +285,7 @@ void Connect::readdashsetup3()
              line.prepend("Square gauge,");
              list = line.split(QRegExp("\\,"));
             }*/
-            list.removeAll(QString(""));
+            normalizeLegacyDashRow(list);
             m_dashBoard->setdashsetup3(list);
         }
         inputFile.close();
@@ -280,7 +315,7 @@ void Connect::readdashsetup2()
              line.prepend("Square gauge,");
              list = line.split(QRegExp("\\,"));
             }*/
-            list.removeAll(QString(""));
+            normalizeLegacyDashRow(list);
             m_dashBoard->setdashsetup2(list);
         }
         inputFile.close();
@@ -310,7 +345,7 @@ void Connect::readdashsetup1()
              line.prepend("Square gauge,");
              list = line.split(QRegExp("\\,"));
             }*/
-            list.removeAll(QString(""));
+            normalizeLegacyDashRow(list);
             m_dashBoard->setdashsetup1(list);
         }
         inputFile.close();
@@ -411,9 +446,13 @@ void Connect::getPorts()
     {
         PortList.append(info.portName());
     }
-    setPortsNames(PortList);
-    // Check available ports every 1000 ms
-    QTimer::singleShot(1000, this, SLOT(getPorts()));
+    if (PortList != cachedPorts)
+    {
+        cachedPorts = PortList;
+        setPortsNames(PortList);
+    }
+    // Check available ports every 2000 ms
+    QTimer::singleShot(2000, this, SLOT(getPorts()));
 }
 //function for flushing all Connect buffers
 void Connect::clear() const

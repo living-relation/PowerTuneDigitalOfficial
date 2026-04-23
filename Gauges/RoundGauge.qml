@@ -89,8 +89,17 @@ Rectangle{
     property string peakneedleoffset
     property string peakneedlevisible
 
+    property string gaugeFaceStyleName: (peakneedlecolor2 !== "" && peakneedlecolor2 !== "0" ? peakneedlecolor2 : "Classic")
+    property string ringStyleName: (peakneedlelenght !== "" && peakneedlelenght !== "0" ? peakneedlelenght : "Classic")
+    property string needleStyleName: (peakneedlecolor !== "" && peakneedlecolor !== "0" ? peakneedlecolor : "Default (Canvas)")
+    property string activeRingSource: "qrc:/graphics/RoungGaugeRing.png"
+    property int selectedNeedleStyleIndex: 0
+    property int selectedFaceStyleIndex: 0
+    property int selectedRingStyleIndex: 0
+
     Drag.active: true
     DatasourcesList{id: powertunedatasource}
+    NeedleStyleList { id: needleStyleModel }
 
     SequentialAnimation {
         id: intro
@@ -158,6 +167,11 @@ Rectangle{
         }
         Component.onCompleted: {toggledecimal();
             toggledecimal2();
+            resolveNeedleStyle();
+            applyRingStyle(ringStyleName);
+            if (gaugeFaceStyleName === "Modern Dark" || gaugeFaceStyleName === "Minimal Light" || gaugeFaceStyleName === "Neon Sport") {
+                applyFacePreset(gaugeFaceStyleName);
+            }
         }
     }
 
@@ -207,11 +221,20 @@ Rectangle{
                 implicitHeight: outerRadius *(needleLength *0.01)
                 antialiasing: true
                 color: "transparent"
+                Image {
+                    id: svgNeedle
+                    anchors.fill: parent
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                    source: needleSourceByName(needleStyleName)
+                    visible: source !== ""
+                }
                 Canvas {
                     id: needlecanvas
                     anchors.centerIn: parent
                     implicitWidth: parent.width
                     implicitHeight: parent.height
+                    visible: !svgNeedle.visible
                     property real xCenter: parent.width / 2
                     property real yCenter: parent.height / 2
 
@@ -388,7 +411,7 @@ Rectangle{
         id: ring
         anchors.fill: parent
         visible: ringvisible
-        source: "qrc:/graphics/RoungGaugeRing.png"
+        source: activeRingSource
     }
     Item {
         id: menustructure
@@ -428,6 +451,10 @@ Rectangle{
                 onClicked: {needlemenu.popup(touchArea.mouseX, touchArea.mouseY);
                     for(var i = 0; i < needlecolor2select.model.count; ++i) if (needlecolor2select.textAt(i) === needlecolor2)needlecolor2select.currentIndex = i;
                     for(var a = 0; a < needlecolorselect.model.count; ++a) if (needlecolorselect.textAt(a) === needlecolor)needlecolorselect.currentIndex = a ;
+                    resolveNeedleStyle();
+                    needleStyleSelect.currentIndex = selectedNeedleStyleIndex;
+                    for (var p = 0; p < facePresetSelect.model.length; ++p) if (facePresetSelect.model[p] === gaugeFaceStyleName) facePresetSelect.currentIndex = p;
+                    for (var r = 0; r < ringStyleSelect.model.length; ++r) if (ringStyleSelect.model[r] === ringStyleName) ringStyleSelect.currentIndex = r;
 
                 }
             }
@@ -822,13 +849,69 @@ Rectangle{
     Rectangle{
         color: "darkgrey"
         width:popupmenu.width
-        height: 460
+        height: 650
         radius: 10
 
         Grid {
-            rows: 25
+            rows: 34
             leftPadding: 5
             rowSpacing :5
+
+            Text {
+                text: Translator.translate("Needle style", Dashboard.language)
+                font.bold: true
+                font.pixelSize: 15
+            }
+            ComboBox {
+                id: needleStyleSelect
+                width: popupmenu.width /1.07
+                model: needleStyleModel
+                textRole: "name"
+                font.pixelSize: 15
+                onActivated: {
+                    needleStyleName = needleStyleModel.get(currentIndex).name;
+                    peakneedlecolor = needleStyleName;
+                    selectedNeedleStyleIndex = currentIndex;
+                }
+                Component.onCompleted: currentIndex = selectedNeedleStyleIndex
+            }
+
+            Text {
+                text: Translator.translate("Face preset", Dashboard.language)
+                font.bold: true
+                font.pixelSize: 15
+            }
+            ComboBox {
+                id: facePresetSelect
+                width: popupmenu.width /1.07
+                model: ["Custom", "Modern Dark", "Minimal Light", "Neon Sport"]
+                font.pixelSize: 15
+                onActivated: {
+                    gaugeFaceStyleName = facePresetSelect.currentText;
+                    peakneedlecolor2 = gaugeFaceStyleName;
+                    if (gaugeFaceStyleName !== "Custom") {
+                        applyFacePreset(gaugeFaceStyleName);
+                    }
+                }
+            }
+
+            Text {
+                text: Translator.translate("Ring style", Dashboard.language)
+                font.bold: true
+                font.pixelSize: 15
+            }
+            ComboBox {
+                id: ringStyleSelect
+                width: popupmenu.width /1.07
+                model: ["Classic", "Carbon", "Neon", "Clean"]
+                font.pixelSize: 15
+                onActivated: {
+                    applyRingStyle(ringStyleSelect.currentText);
+                    peakneedlelenght = ringStyleName;
+                    selectedRingStyleIndex = ringStyleSelect.currentIndex;
+                }
+                Component.onCompleted: currentIndex = selectedRingStyleIndex
+            }
 
             Text {
                 text: Translator.translate("Needle color", Dashboard.language)
@@ -2173,6 +2256,86 @@ Menu{
     }
     //Functions
 
+
+    function needleSourceByName(name) {
+        for (var i = 0; i < needleStyleModel.count; ++i) {
+            if (needleStyleModel.get(i).name === name) {
+                return needleStyleModel.get(i).source;
+            }
+        }
+        return "";
+    }
+
+    function resolveNeedleStyle() {
+        for (var i = 0; i < needleStyleModel.count; ++i) {
+            if (needleStyleModel.get(i).name === needleStyleName) {
+                selectedNeedleStyleIndex = i;
+                return;
+            }
+        }
+        needleStyleName = "Default (Canvas)";
+        selectedNeedleStyleIndex = 0;
+    }
+
+    function applyFacePreset(styleName) {
+        if (styleName === "Modern Dark") {
+            backroundcolor = "#161a24";
+            minortickmarkcoloractive = "#d8e2ff";
+            minortickmarkcolorinactive = "#3b4259";
+            majortickmarkcoloractive = "#ffffff";
+            majortickmarkcolorinactive = "#4a5270";
+            labelcoloractive = "#ffffff";
+            labelcolorinactive = "#7d8ab3";
+            outerneedlecolortrailsave = "#60b5ff";
+            middleneedlecortrailsave = "#3d8bff";
+            lowerneedlecolortrailsave = "#1f4fff";
+        } else if (styleName === "Minimal Light") {
+            backroundcolor = "#f4f6fb";
+            minortickmarkcoloractive = "#1f2638";
+            minortickmarkcolorinactive = "#98a2ba";
+            majortickmarkcoloractive = "#111827";
+            majortickmarkcolorinactive = "#7f8aa3";
+            labelcoloractive = "#111827";
+            labelcolorinactive = "#5f6b85";
+            outerneedlecolortrailsave = "#6f8dd6";
+            middleneedlecortrailsave = "#4f6ec3";
+            lowerneedlecolortrailsave = "#334a92";
+        } else if (styleName === "Neon Sport") {
+            backroundcolor = "#0f1118";
+            minortickmarkcoloractive = "#7be6ff";
+            minortickmarkcolorinactive = "#205365";
+            majortickmarkcoloractive = "#b4ff3d";
+            majortickmarkcolorinactive = "#40701f";
+            labelcoloractive = "#7be6ff";
+            labelcolorinactive = "#3b7a89";
+            outerneedlecolortrailsave = "#5f00ff";
+            middleneedlecortrailsave = "#00c4ff";
+            lowerneedlecolortrailsave = "#00ff9d";
+        }
+        gaugeFaceStyleName = styleName;
+    }
+
+    function applyRingStyle(styleName) {
+        selectedRingStyleIndex = 0;
+        if (styleName === "Classic") {
+            activeRingSource = "qrc:/graphics/RoungGaugeRing.png";
+            selectedRingStyleIndex = 0;
+        } else if (styleName === "Carbon") {
+            activeRingSource = "qrc:/graphics/Needles/ring_carbon.svg";
+            selectedRingStyleIndex = 1;
+        } else if (styleName === "Neon") {
+            activeRingSource = "qrc:/graphics/Needles/ring_neon.svg";
+            selectedRingStyleIndex = 2;
+        } else if (styleName === "Clean") {
+            activeRingSource = "qrc:/graphics/Needles/ring_clean.svg";
+            selectedRingStyleIndex = 3;
+        } else {
+            activeRingSource = "qrc:/graphics/RoungGaugeRing.png";
+            styleName = "Classic";
+            selectedRingStyleIndex = 0;
+        }
+        ringStyleName = styleName;
+    }
 
     function togglemousearea()
     {

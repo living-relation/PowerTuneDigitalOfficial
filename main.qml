@@ -94,7 +94,10 @@ ApplicationWindow {
 
     Component.onCompleted: {
         ////console.log("ExBoard digiValue: " + custom.digiValue)
-        popUpLoader.source = "qrc:/BrightnessPopUp.qml"
+        if (appSettings.sampleActionEnabled) {
+            popUpLoader.source = "qrc:/BrightnessPopUp.qml"
+            popUpLoader.visible = true
+        }
         custom.executeOnBootAction()
         //console.log("Max Brightness on Boot Value Check: " + custom.maxBrightnessOnBoot)
         if(Qt.platform.os === "linux" && HAVE_DDCUTIL){
@@ -574,11 +577,15 @@ ApplicationWindow {
                     onPositionChanged: {
                         popUpLoader.enabled = !popUpLoader.enabled;
                         appSettings.sampleActionEnabled = popUpLoader.enabled //setValue
-                        popUpLoader.visible = false
                         if(popUpLoader.enabled){
+                            if (popUpLoader.source === "") {
+                                popUpLoader.source = "qrc:/BrightnessPopUp.qml"
+                            }
+                            popUpLoader.visible = true
                             disablePopUp.text = "On"
                             ////console.log("Pop Up Enabled")
                         }else{
+                           popUpLoader.visible = false
                            disablePopUp.text = "Off"
                             ////console.log("Pop Up Disabled")
                         }
