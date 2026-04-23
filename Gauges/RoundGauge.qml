@@ -99,68 +99,14 @@ Rectangle{
 
     readonly property var gaugeStyleNames: ["Classic", "Carbon", "Neon Glow", "Racing Digital", "Modern Flat", "Aurora", "Stealth", "Pro"]
 
-    // After gaugeStyleIndex in CSV: needleStyleIndex (row in NeedleStyleList), needleImageSource (qrc path or "" for canvas)
+    // Keep legacy properties for compatibility with existing saved dashboards.
+    // Needle rendering is canvas-only.
     property int needleStyleIndex: 0
     property string needleImageSource: ""
-    readonly property bool useImageNeedle: needleImageSource && needleImageSource.length > 0
-    property bool _needleListReady: false
-
-    onNeedleStyleIndexChanged: {
-        if (_needleListReady && needleStyleLoader.status === Loader.Ready && needleStyleLoader.item && needleStyleLoader.item.needleModel) {
-            var nm = needleStyleLoader.item.needleModel
-            var i = Math.max(0, Math.min(needleStyleIndex, nm.count - 1))
-            if (needleStyleCombo.currentIndex !== i)
-                needleStyleCombo.currentIndex = i
-        }
-        applyNeedleStyleFromIndex()
-    }
+    property string ringcolor: "white"
 
     Drag.active: true
     DatasourcesList{id: powertunedatasource}
-    // Needle style presets (keeps list in one QML file for ComboBox)
-    Loader {
-        id: needleStyleLoader
-        active: true
-        source: "qrc:/Gauges/NeedleStyleList.qml"
-        onLoaded: {
-            if (item && item.needleModel) {
-                var idx = Math.max(0, Math.min(needleStyleIndex, item.needleModel.count - 1))
-                needleStyleCombo.currentIndex = idx
-            }
-            _needleListReady = true
-            applyNeedleStyleFromIndex()
-        }
-    }
-
-    function applyNeedleStyleFromIndex() {
-        var m = needleStyleLoader.item ? needleStyleLoader.item.needleModel : null
-        if (!m)
-            return
-        if (needleStyleIndex < 0 || needleStyleIndex >= m.count) {
-            needleImageSource = ""
-            return
-        }
-        // Match preset row when a path was saved without a matching index (e.g. hand-edited CSV)
-        if (needleImageSource && needleImageSource.length > 0) {
-            var j
-            for (j = 0; j < m.count; j++) {
-                if (m.get(j).source === needleImageSource)
-                    break
-            }
-            if (j < m.count && j !== needleStyleIndex) {
-                needleStyleIndex = j
-                return
-            }
-            if (j >= m.count)
-                return
-        }
-        var row = m.get(needleStyleIndex)
-        if (row.isCanvas || !row.source || row.source === "") {
-            needleImageSource = ""
-        } else {
-            needleImageSource = row.source
-        }
-    }
 
     SequentialAnimation {
         id: intro
@@ -281,7 +227,6 @@ Rectangle{
                 Canvas {
                     id: needlecanvas
                     anchors.fill: parent
-                    visible: !roundGauge.useImageNeedle
                     renderStrategy: Canvas.Threaded
                     property real xCenter: width / 2
                     property real yCenter: height / 2
@@ -315,21 +260,6 @@ Rectangle{
                         ctx.fillStyle = needlecolor;
                         ctx.fill();
                     }
-                }
-                // SVG needle: pivot at bottom center; gauge style rotates the whole Item
-                Image {
-                    id: needleImageItem
-                    visible: roundGauge.useImageNeedle
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.bottom: parent.bottom
-                    width: parent.width
-                    height: parent.height
-                    source: roundGauge.needleImageSource
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                    mipmap: true
-                    antialiasing: true
-                    transformOrigin: Item.Bottom
                 }
             }
 
@@ -750,11 +680,6 @@ Rectangle{
                 onClicked: {needlemenu.popup(touchArea.mouseX, touchArea.mouseY);
                     for(var i = 0; i < needlecolor2select.model.count; ++i) if (needlecolor2select.textAt(i) === needlecolor2)needlecolor2select.currentIndex = i;
                     for(var a = 0; a < needlecolorselect.model.count; ++a) if (needlecolorselect.textAt(a) === needlecolor)needlecolorselect.currentIndex = a ;
-                    if (needleStyleLoader.item && needleStyleLoader.item.needleModel) {
-                        var nm = needleStyleLoader.item.needleModel
-                        needleStyleCombo.currentIndex = Math.max(0, Math.min(needleStyleIndex, nm.count - 1))
-                    }
-
                 }
             }
             MenuItem {
@@ -958,6 +883,42 @@ Rectangle{
                     width: backroundcolorselect.width
                     height: backroundcolorselect.height
                     color:  backroundcolorselect.currentText
+                }
+            }
+            Text {
+                text: "Ring color"
+                font.bold: true
+                font.pixelSize: 15}
+
+            ComboBox {
+                id: ringcolorselect
+                width: popupmenu.width /1.07
+                model: ColorList{}
+                visible: true
+                font.pixelSize: 15
+                currentIndex: 1
+                onCurrentIndexChanged: {
+                    ring.tintColor = ringcolorselect.textAt(ringcolorselect.currentIndex)
+                    ring.color = ring.tintColor
+                }
+                delegate: ItemDelegate {
+                    width: ringcolorselect.width
+                    font.pixelSize: 15
+                    Rectangle {
+                        width: ringcolorselect.width
+                        height: 50
+                        color: itemColor
+                        Text {
+                            text: itemColor
+                            anchors.centerIn: parent
+                            font.pixelSize: 15
+                        }
+                    }
+                }
+                background: Rectangle{
+                    width: ringcolorselect.width
+                    height: ringcolorselect.height
+                    color: ringcolorselect.currentText
                 }
             }
 
@@ -1237,28 +1198,6 @@ Rectangle{
                     width: needlecolor2select.width
                     height: needlecolor2select.height
                     color:  needlecolor2select.currentText
-                }
-            }
-
-            Text {
-                text: Translator.translate("Needle style", Dashboard.language)
-                font.bold: true
-                font.pixelSize: 15}
-            ComboBox {
-                id: needleStyleCombo
-                width: popupmenu.width /1.07
-                font.pixelSize: 15
-                textRole: "name"
-                model: needleStyleLoader.item ? needleStyleLoader.item.needleModel : 0
-                currentIndex: needleStyleIndex
-                onCurrentIndexChanged: {
-                    if (_needleListReady && currentIndex !== needleStyleIndex)
-                        needleStyleIndex = currentIndex
-                }
-                delegate: ItemDelegate {
-                    width: needleStyleCombo.width
-                    font.pixelSize: 15
-                    text: model.name
                 }
             }
 

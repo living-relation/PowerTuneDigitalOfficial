@@ -41,6 +41,7 @@ Item {
     property int parser
     property int touchCounter: 0
     property real lastTouchTime: 0
+    property string activeSourceProfile: "CAN_ONLY"
 
     Drag.active: true
     MyTextLabel{x:10
@@ -118,7 +119,7 @@ Item {
                 if (dashvalue.textAt(0) === "Round gauge")
                 {
                     //console.log("create Round Gauge")
-                    CreateRoundgaugeScript.createRoundGauge(dashvalue.textAt(1),dashvalue.textAt(2),dashvalue.textAt(3),dashvalue.textAt(4),dashvalue.textAt(5),dashvalue.textAt(6),dashvalue.textAt(7),dashvalue.textAt(8),dashvalue.textAt(9),dashvalue.textAt(10),dashvalue.textAt(11),dashvalue.textAt(12),dashvalue.textAt(13),dashvalue.textAt(14),dashvalue.textAt(15),dashvalue.textAt(16),dashvalue.textAt(17),dashvalue.textAt(18),dashvalue.textAt(19),dashvalue.textAt(20),dashvalue.textAt(21),dashvalue.textAt(22),dashvalue.textAt(23),dashvalue.textAt(24),dashvalue.textAt(25),dashvalue.textAt(26),dashvalue.textAt(27),dashvalue.textAt(28),dashvalue.textAt(29),dashvalue.textAt(30),dashvalue.textAt(31),dashvalue.textAt(32),dashvalue.textAt(33),dashvalue.textAt(34),dashvalue.textAt(35),dashvalue.textAt(36),dashvalue.textAt(37),dashvalue.textAt(38),dashvalue.textAt(39),dashvalue.textAt(40),dashvalue.textAt(41),dashvalue.textAt(42),dashvalue.textAt(43),dashvalue.textAt(44),dashvalue.textAt(45),dashvalue.textAt(46),dashvalue.textAt(47),dashvalue.textAt(48),(dashvalue.textAt(49).toLowerCase() === 'true' ? true : false),(dashvalue.textAt(50).toLowerCase() === 'true' ? true : false),(dashvalue.textAt(51).toLowerCase() === 'true' ? true : false),dashvalue.textAt(52),dashvalue.textAt(53),dashvalue.textAt(54),dashvalue.textAt(55),(dashvalue.textAt(56).toLowerCase() === 'true' ? true : false),dashvalue.textAt(57),dashvalue.textAt(58),dashvalue.textAt(59),dashvalue.textAt(60),dashvalue.textAt(61),dashvalue.textAt(62),dashvalue.textAt(63),dashvalue.textAt(64),dashvalue.textAt(65),(dashvalue.textAt(66).toLowerCase() === 'true' ? true : false),dashvalue.textAt(67),(dashvalue.count > 68 ? dashvalue.textAt(68) : "0"),(dashvalue.count > 69 ? dashvalue.textAt(69) : ""));
+                    CreateRoundgaugeScript.createRoundGauge(dashvalue.textAt(1),dashvalue.textAt(2),dashvalue.textAt(3),dashvalue.textAt(4),dashvalue.textAt(5),dashvalue.textAt(6),dashvalue.textAt(7),dashvalue.textAt(8),dashvalue.textAt(9),dashvalue.textAt(10),dashvalue.textAt(11),dashvalue.textAt(12),dashvalue.textAt(13),dashvalue.textAt(14),dashvalue.textAt(15),dashvalue.textAt(16),dashvalue.textAt(17),dashvalue.textAt(18),dashvalue.textAt(19),dashvalue.textAt(20),dashvalue.textAt(21),dashvalue.textAt(22),dashvalue.textAt(23),dashvalue.textAt(24),dashvalue.textAt(25),dashvalue.textAt(26),dashvalue.textAt(27),dashvalue.textAt(28),dashvalue.textAt(29),dashvalue.textAt(30),dashvalue.textAt(31),dashvalue.textAt(32),dashvalue.textAt(33),dashvalue.textAt(34),dashvalue.textAt(35),dashvalue.textAt(36),dashvalue.textAt(37),dashvalue.textAt(38),dashvalue.textAt(39),dashvalue.textAt(40),dashvalue.textAt(41),dashvalue.textAt(42),dashvalue.textAt(43),dashvalue.textAt(44),dashvalue.textAt(45),dashvalue.textAt(46),dashvalue.textAt(47),dashvalue.textAt(48),(dashvalue.textAt(49).toLowerCase() === 'true' ? true : false),(dashvalue.textAt(50).toLowerCase() === 'true' ? true : false),(dashvalue.textAt(51).toLowerCase() === 'true' ? true : false),dashvalue.textAt(52),dashvalue.textAt(53),dashvalue.textAt(54),dashvalue.textAt(55),(dashvalue.textAt(56).toLowerCase() === 'true' ? true : false),dashvalue.textAt(57),dashvalue.textAt(58),dashvalue.textAt(59),dashvalue.textAt(60),dashvalue.textAt(61),dashvalue.textAt(62),dashvalue.textAt(63),dashvalue.textAt(64),dashvalue.textAt(65),(dashvalue.textAt(66).toLowerCase() === 'true' ? true : false),dashvalue.textAt(67),(dashvalue.count > 68 ? dashvalue.textAt(68) : "white"));
                 }
 
                 if (dashvalue.textAt(0) === "Square gauge")
@@ -541,13 +542,49 @@ Item {
             }
         }
         */
+        ListModel { id: filteredSourcesModel }
+        function isCalculatedSource(sourceName) {
+            return sourceName === "speed" || sourceName === "rpm" || sourceName === "FuelLevel"
+                   || sourceName === "reactiontime" || sourceName === "sixtyfoottime"
+                   || sourceName === "sixtyfootspeed" || sourceName === "threehundredthirtyfoottime"
+                   || sourceName === "threehundredthirtyfootspeed" || sourceName === "eightmiletime"
+                   || sourceName === "eightmilespeed" || sourceName === "quartermiletime"
+                   || sourceName === "quartermilespeed" || sourceName === "thousandfoottime"
+                   || sourceName === "thousandfootspeed" || sourceName === "zerotohundredt"
+                   || sourceName === "hundredtotwohundredtime" || sourceName === "twohundredtothreehundredtime";
+        }
+        function sourceAllowedForProfile(sourceObj) {
+            var ecus = (sourceObj.supportedECUs || "").toString();
+            var isExtenderOnly = ecus.indexOf("Extender") !== -1;
+            var isPowerTuneOnly = ecus.indexOf("PowerTune") !== -1;
+            var isApexiOnly = ecus.indexOf("Apexi") !== -1 || ecus.indexOf("SAFC") !== -1;
+            var isObdOnly = ecus.indexOf("OBD") !== -1;
+            if (activeSourceProfile === "CAN_ONLY") {
+                if (isCalculatedSource(sourceObj.sourcename))
+                    return true;
+                return !isExtenderOnly && !isPowerTuneOnly && !isApexiOnly && !isObdOnly;
+            }
+            return true;
+        }
+        function squaregaugemenu.rebuildFilteredSources() {
+            filteredSourcesModel.clear();
+            for (var i = 0; i < powertunedatasource.count; ++i) {
+                var sourceObj = powertunedatasource.get(i);
+                if (sourceAllowedForProfile(sourceObj))
+                    filteredSourcesModel.append({"sourceIndex": i, "titlename": sourceObj.titlename});
+            }
+            if (filteredSourcesModel.count > 0 && cbx_sources.currentIndex < 0)
+                cbx_sources.currentIndex = 0;
+        }
         ComboBox {
             id: cbx_sources
             font.pixelSize: 14
             textRole: "titlename"
             width: parent.width
             height: parent.height * 0.083
-            model: powertunedatasource
+            model: filteredSourcesModel
+            property int selectedSourceIndex: (currentIndex >= 0 && currentIndex < filteredSourcesModel.count)
+                                              ? filteredSourcesModel.get(currentIndex).sourceIndex : 0
             delegate: ItemDelegate {
                 width: cbx_sources.width
                 text: cbx_sources.textRole ? (Array.isArray(cbx_sources.model) ? modelData[cbx_sources.textRole] : model[cbx_sources.textRole]) : modelData
@@ -558,6 +595,7 @@ Item {
                 hoverEnabled: cbx_sources.hoverEnabled
             }
             Component.onCompleted: {
+                squaregaugemenu.rebuildFilteredSources()
                 if(mainwindow.width == 1600){
                     cbx_sources.font.pixelSize == 18;
                 }
@@ -604,8 +642,8 @@ Item {
                 text:  Translator.translate("Square", Dashboard.language)
                 font.pixelSize: mainwindow.width * 0.015
                 onClicked: {
-                    console.log(powertunedatasource.get(cbx_sources.currentIndex).decimalpoints);
-                    CreateSquareGaugeScript.createSquareGauge(266,119,0,240,248,powertunedatasource.get(cbx_sources.currentIndex).decimalpoints,powertunedatasource.get(cbx_sources.currentIndex).defaultsymbol,powertunedatasource.get(cbx_sources.currentIndex).titlename,false,true,false,"Dashboard",powertunedatasource.get(cbx_sources.currentIndex).sourcename,powertunedatasource.get(cbx_sources.currentIndex).sourcename,10000,-20000,"lightsteelblue","black","lightsteelblue","white","white","blue",25,40,powertunedatasource.get(cbx_sources.currentIndex).decimalpoints2,"Lato","Lato");
+                    console.log(powertunedatasource.get(cbx_sources.selectedSourceIndex).decimalpoints);
+                    CreateSquareGaugeScript.createSquareGauge(266,119,0,240,248,powertunedatasource.get(cbx_sources.selectedSourceIndex).decimalpoints,powertunedatasource.get(cbx_sources.selectedSourceIndex).defaultsymbol,powertunedatasource.get(cbx_sources.selectedSourceIndex).titlename,false,true,false,"Dashboard",powertunedatasource.get(cbx_sources.selectedSourceIndex).sourcename,powertunedatasource.get(cbx_sources.selectedSourceIndex).sourcename,10000,-20000,"lightsteelblue","black","lightsteelblue","white","white","blue",25,40,powertunedatasource.get(cbx_sources.selectedSourceIndex).decimalpoints2,"Lato","Lato");
                     squaregaugemenu.visible = false;
                     selectcolor.visible =false;
                     Dashboard.setdraggable(0);
@@ -619,7 +657,7 @@ Item {
                 text: Translator.translate("Bar", Dashboard.language)
                 font.pixelSize: mainwindow.width * 0.015
                 onClicked: {
-                    CreateBargaugeScript.createVerticalGauge(320,80,10,0,0,8000,powertunedatasource.get(cbx_sources.currentIndex).decimalpoints,powertunedatasource.get(cbx_sources.currentIndex).titlename,powertunedatasource.get(cbx_sources.currentIndex).sourcename,1000,0);
+                    CreateBargaugeScript.createVerticalGauge(320,80,10,0,0,8000,powertunedatasource.get(cbx_sources.selectedSourceIndex).decimalpoints,powertunedatasource.get(cbx_sources.selectedSourceIndex).titlename,powertunedatasource.get(cbx_sources.selectedSourceIndex).sourcename,1000,0);
                     squaregaugemenu.visible = false;
                     selectcolor.visible =false;
                     Dashboard.setdraggable(0);
@@ -632,7 +670,7 @@ Item {
                 text: Translator.translate("Round", Dashboard.language)
                 font.pixelSize: mainwindow.width * 0.015
                 onClicked: {
-                    CreateRoundgaugeScript.createRoundGauge(400,20,20,powertunedatasource.get(cbx_sources.currentIndex).sourcename,powertunedatasource.get(cbx_sources.currentIndex).maxvalue,0,powertunedatasource.get(cbx_sources.currentIndex).maxvalue,-1000,-145,90,powertunedatasource.get(cbx_sources.currentIndex).maxvalue,powertunedatasource.get(cbx_sources.currentIndex).divisor,powertunedatasource.get(cbx_sources.currentIndex).stepsize,1,powertunedatasource.get(cbx_sources.currentIndex).stepsize,powertunedatasource.get(cbx_sources.currentIndex).decimalpoints,2,38,3,3,8,3,15,5,0.50,0.40,0.33,0.25,20,5,93,8,0,0,"red","darkred","aliceblue","red","grey","darkgrey","darkgrey","black","grey","black","dodgerblue","deepskyblue","lightskyblue","transparent",true,true,true,"Lato",30,50,10,false,"Lato",powertunedatasource.get(cbx_sources.currentIndex).titlename,"red",0,0,0,0,0,0,"false");
+                    CreateRoundgaugeScript.createRoundGauge(400,20,20,powertunedatasource.get(cbx_sources.selectedSourceIndex).sourcename,powertunedatasource.get(cbx_sources.selectedSourceIndex).maxvalue,0,powertunedatasource.get(cbx_sources.selectedSourceIndex).maxvalue,-1000,-145,90,powertunedatasource.get(cbx_sources.selectedSourceIndex).maxvalue,powertunedatasource.get(cbx_sources.selectedSourceIndex).divisor,powertunedatasource.get(cbx_sources.selectedSourceIndex).stepsize,1,powertunedatasource.get(cbx_sources.selectedSourceIndex).stepsize,powertunedatasource.get(cbx_sources.selectedSourceIndex).decimalpoints,2,38,3,3,8,3,15,5,0.50,0.40,0.33,0.25,20,5,93,8,0,0,"red","darkred","aliceblue","red","grey","darkgrey","darkgrey","black","grey","black","dodgerblue","deepskyblue","lightskyblue","transparent",true,true,true,"Lato",30,50,10,false,"Lato",powertunedatasource.get(cbx_sources.selectedSourceIndex).titlename,"red",0,0,0,0,0,0,"false");
                     squaregaugemenu.visible = false;
                     selectcolor.visible =false;
                     Dashboard.setdraggable(0);
@@ -969,8 +1007,7 @@ Item {
                                          userDash.children[i].peakneedleoffset+","+
                                          userDash.children[i].peakneedlevisible+","+
                                          userDash.children[i].gaugeStyleIndex+","+
-                                         userDash.children[i].needleStyleIndex+","+
-                                         userDash.children[i].needleImageSource+"\r\n");
+                                         userDash.children[i].ringcolor+"\r\n");
             }
             if (userDash.children[i].information === "State gauge")
             {
@@ -1076,8 +1113,7 @@ Item {
                                                         gaugelist.get(i).peakneedleoffset,
                                                         gaugelist.get(i).peakneedlevisible,
                                                         gaugelist.get(i).gaugeStyleIndex,
-                                                        gaugelist.get(i).needleStyleIndex,
-                                                        gaugelist.get(i).needleImageSource
+                                                        gaugelist.get(i).ringcolor
                                                         );
                 break;
             }
@@ -1267,8 +1303,7 @@ Item {
                                      "peakneedleoffset":userDash.children[i].peakneedleoffset,
                                      "peakneedlevisible":userDash.children[i].peakneedlevisible,
                                      "gaugeStyleIndex":userDash.children[i].gaugeStyleIndex,
-                                     "needleStyleIndex":userDash.children[i].needleStyleIndex,
-                                     "needleImageSource":userDash.children[i].needleImageSource
+                                     "ringcolor":userDash.children[i].ringcolor
                                  })
             }
 

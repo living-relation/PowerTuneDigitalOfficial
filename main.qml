@@ -115,6 +115,9 @@ ApplicationWindow {
         id: keyboardcontainer
         color: "transparent"
         visible: false
+        border.width: 1
+        border.color: Qt.rgba(1, 1, 1, 0.75)
+        radius: 4
 
         width: Screen.desktopAvailableWidth * 0.50
         height: Screen.desktopAvailableHeight * 0.40
