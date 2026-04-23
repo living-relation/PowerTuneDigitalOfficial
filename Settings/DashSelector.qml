@@ -7,7 +7,7 @@ Rectangle {
 
     id: dashselector
     anchors.fill: parent
-    color: "grey"
+    color: Qt.rgba(0.1, 0.11, 0.15, 1)
 
     Settings {
         property alias dashselect1: dash1.currentIndex

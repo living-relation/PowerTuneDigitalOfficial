@@ -93,13 +93,74 @@ Rectangle{
     // compatible). New saves append this field; older saves that lack it
     // simply coerce to 0. Styles are layered on top of the base renderer
     // without altering tickmark geometry or value mapping.
-    //   0 Classic, 1 Carbon, 2 Neon Glow, 3 Racing Digital, 4 Modern Flat
+    //   0 Classic, 1 Carbon, 2 Neon Glow, 3 Racing Digital, 4 Modern Flat,
+    //   5 Aurora, 6 Stealth, 7 Pro (layered on base; 0-4 unchanged)
     property int gaugeStyleIndex: 0
 
-    readonly property var gaugeStyleNames: ["Classic", "Carbon", "Neon Glow", "Racing Digital", "Modern Flat"]
+    readonly property var gaugeStyleNames: ["Classic", "Carbon", "Neon Glow", "Racing Digital", "Modern Flat", "Aurora", "Stealth", "Pro"]
+
+    // After gaugeStyleIndex in CSV: needleStyleIndex (row in NeedleStyleList), needleImageSource (qrc path or "" for canvas)
+    property int needleStyleIndex: 0
+    property string needleImageSource: ""
+    readonly property bool useImageNeedle: needleImageSource && needleImageSource.length > 0
+    property bool _needleListReady: false
+
+    onNeedleStyleIndexChanged: {
+        if (_needleListReady && needleStyleLoader.status === Loader.Ready && needleStyleLoader.item && needleStyleLoader.item.needleModel) {
+            var nm = needleStyleLoader.item.needleModel
+            var i = Math.max(0, Math.min(needleStyleIndex, nm.count - 1))
+            if (needleStyleCombo.currentIndex !== i)
+                needleStyleCombo.currentIndex = i
+        }
+        applyNeedleStyleFromIndex()
+    }
 
     Drag.active: true
     DatasourcesList{id: powertunedatasource}
+    // Needle style presets (keeps list in one QML file for ComboBox)
+    Loader {
+        id: needleStyleLoader
+        active: true
+        source: "qrc:/Gauges/NeedleStyleList.qml"
+        onLoaded: {
+            if (item && item.needleModel) {
+                var idx = Math.max(0, Math.min(needleStyleIndex, item.needleModel.count - 1))
+                needleStyleCombo.currentIndex = idx
+            }
+            _needleListReady = true
+            applyNeedleStyleFromIndex()
+        }
+    }
+
+    function applyNeedleStyleFromIndex() {
+        var m = needleStyleLoader.item ? needleStyleLoader.item.needleModel : null
+        if (!m)
+            return
+        if (needleStyleIndex < 0 || needleStyleIndex >= m.count) {
+            needleImageSource = ""
+            return
+        }
+        // Match preset row when a path was saved without a matching index (e.g. hand-edited CSV)
+        if (needleImageSource && needleImageSource.length > 0) {
+            var j
+            for (j = 0; j < m.count; j++) {
+                if (m.get(j).source === needleImageSource)
+                    break
+            }
+            if (j < m.count && j !== needleStyleIndex) {
+                needleStyleIndex = j
+                return
+            }
+            if (j >= m.count)
+                return
+        }
+        var row = m.get(needleStyleIndex)
+        if (row.isCanvas || !row.source || row.source === "") {
+            needleImageSource = ""
+        } else {
+            needleImageSource = row.source
+        }
+    }
 
     SequentialAnimation {
         id: intro
@@ -208,21 +269,22 @@ Rectangle{
 
 
 
-            needle: Rectangle {
+            needle: Item {
                 id:gaugeneedle
                 visible: needlevisible
                 y: outerRadius * (needleinset * 0.01)
                 implicitWidth: outerRadius * (needleBaseWidth *0.01)
                 implicitHeight: outerRadius *(needleLength *0.01)
-                antialiasing: true
-                color: "transparent"
+                layer.enabled: true
+                layer.smooth: true
+
                 Canvas {
                     id: needlecanvas
-                    anchors.centerIn: parent
-                    implicitWidth: parent.width
-                    implicitHeight: parent.height
-                    property real xCenter: parent.width / 2
-                    property real yCenter: parent.height / 2
+                    anchors.fill: parent
+                    visible: !roundGauge.useImageNeedle
+                    renderStrategy: Canvas.Threaded
+                    property real xCenter: width / 2
+                    property real yCenter: height / 2
 
                     Connections {
                         target: roundGauge
@@ -231,15 +293,14 @@ Rectangle{
                         onNeedleTipWidthChanged: needlecanvas.requestPaint()
                     }
 
-
                     onPaint: {
                         var ctx = getContext("2d");
                         ctx.reset();
                         ctx.beginPath();
                         ctx.moveTo(xCenter, height);
-                        ctx.lineTo(xCenter - parent.width / 2, height - parent.width / 2);
+                        ctx.lineTo(xCenter - width / 2, height - width / 2);
                         ctx.lineTo(xCenter - needleTipWidth / 2, 0);
-                        ctx.lineTo(xCenter, yCenter - parent.height);
+                        ctx.lineTo(xCenter, yCenter - height);
                         ctx.lineTo(xCenter, 0);
                         ctx.closePath();
                         ctx.fillStyle = needlecolor2;
@@ -247,13 +308,28 @@ Rectangle{
 
                         ctx.beginPath();
                         ctx.moveTo(xCenter, height)
-                        ctx.lineTo(width, height - parent.width / 2);
+                        ctx.lineTo(width, height - width / 2);
                         ctx.lineTo(xCenter + needleTipWidth / 2, 0);
                         ctx.lineTo(xCenter, 0);
                         ctx.closePath();
                         ctx.fillStyle = needlecolor;
                         ctx.fill();
                     }
+                }
+                // SVG needle: pivot at bottom center; gauge style rotates the whole Item
+                Image {
+                    id: needleImageItem
+                    visible: roundGauge.useImageNeedle
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                    height: parent.height
+                    source: roundGauge.needleImageSource
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                    mipmap: true
+                    antialiasing: true
+                    transformOrigin: Item.Bottom
                 }
             }
 
@@ -286,6 +362,7 @@ Rectangle{
                     id: styleBackgroundCanvas
                     anchors.fill: parent
                     visible: gaugeStyleIndex > 0
+                    renderStrategy: Canvas.Threaded
                     Connections {
                         target: roundGauge
                         onGaugeStyleIndexChanged: styleBackgroundCanvas.requestPaint()
@@ -364,6 +441,56 @@ Rectangle{
                             ctx.fill();
                             break;
                         }
+                        case 5: { // Aurora — purple/blue night radial with soft bands
+                            var gA = ctx.createRadialGradient(cx, cy, r * 0.12, cx, cy, r);
+                            gA.addColorStop(0, Qt.rgba(0.12, 0.08, 0.22, 1));
+                            gA.addColorStop(0.55, Qt.rgba(0.05, 0.08, 0.18, 1));
+                            gA.addColorStop(1, Qt.rgba(0.2, 0.35, 0.55, 0.5));
+                            ctx.beginPath();
+                            ctx.fillStyle = gA;
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            for (var b = 0; b < 4; b++) {
+                                var ri = r * (0.6 + b * 0.1);
+                                ctx.beginPath();
+                                ctx.strokeStyle = Qt.rgba(0.45, 0.65, 0.95, 0.08 - b * 0.015);
+                                ctx.lineWidth = Math.max(1, r * 0.02);
+                                ctx.arc(cx, cy, ri, 0, Math.PI * 2);
+                                ctx.stroke();
+                            }
+                            break;
+                        }
+                        case 6: { // Stealth — near-black with subtle concentric rings
+                            ctx.beginPath();
+                            ctx.fillStyle = Qt.rgba(0.04, 0.045, 0.05, 1);
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            for (var k = 1; k <= 5; k++) {
+                                var rr = r * (0.2 + k * 0.14);
+                                ctx.beginPath();
+                                ctx.strokeStyle = Qt.rgba(0.2, 0.22, 0.25, 0.04 + k * 0.01);
+                                ctx.lineWidth = 1;
+                                ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+                                ctx.stroke();
+                            }
+                            break;
+                        }
+                        case 7: { // Pro — professional instrument blue-grey
+                            var gP = ctx.createRadialGradient(cx, cy * 0.55, r * 0.15, cx, cy, r);
+                            gP.addColorStop(0, Qt.rgba(0.18, 0.22, 0.3, 1));
+                            gP.addColorStop(0.85, Qt.rgba(0.1, 0.12, 0.16, 1));
+                            gP.addColorStop(1, Qt.rgba(0.06, 0.07, 0.1, 1));
+                            ctx.beginPath();
+                            ctx.fillStyle = gP;
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.strokeStyle = Qt.rgba(0.5, 0.6, 0.75, 0.2);
+                            ctx.lineWidth = Math.max(1, r * 0.02);
+                            ctx.arc(cx, cy, r * 0.35, 0, Math.PI * 2);
+                            ctx.stroke();
+                            break;
+                        }
                         }
                     }
                 }
@@ -382,6 +509,7 @@ Rectangle{
                     id:redcanvas
                     property int value: redareastart
                     anchors.fill: parent
+                    renderStrategy: Canvas.Threaded
                     onValueChanged: requestPaint()
                     function degreesToRadians(degrees) {
                         return degrees * (Math.PI / 180);
@@ -497,6 +625,7 @@ Rectangle{
         id: styleOverlayCanvas
         anchors.fill: parent
         visible: gaugeStyleIndex > 0
+        renderStrategy: Canvas.Threaded
         Connections {
             target: roundGauge
             onGaugeStyleIndexChanged: styleOverlayCanvas.requestPaint()
@@ -548,6 +677,38 @@ Rectangle{
                 ctx.stroke();
                 break;
             }
+            case 5: { // Aurora — dual accent rings
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0.4, 0.55, 0.95, 0.75);
+                ctx.lineWidth = Math.max(2, r * 0.028);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0.6, 0.35, 0.9, 0.35);
+                ctx.lineWidth = Math.max(3, r * 0.05);
+                ctx.arc(cx, cy, r * 0.88, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            case 6: { // Stealth — thin light outline
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0.35, 0.38, 0.42, 0.5);
+                ctx.lineWidth = Math.max(1, r * 0.02);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            case 7: { // Pro — highlight top arc
+                var gP2 = ctx.createLinearGradient(0, 0, width, height);
+                gP2.addColorStop(0, Qt.rgba(0.5, 0.65, 0.9, 0.45));
+                gP2.addColorStop(1, Qt.rgba(0.1, 0.12, 0.2, 0.25));
+                ctx.beginPath();
+                ctx.strokeStyle = gP2;
+                ctx.lineWidth = Math.max(2, r * 0.03);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
             }
         }
     }
@@ -589,6 +750,10 @@ Rectangle{
                 onClicked: {needlemenu.popup(touchArea.mouseX, touchArea.mouseY);
                     for(var i = 0; i < needlecolor2select.model.count; ++i) if (needlecolor2select.textAt(i) === needlecolor2)needlecolor2select.currentIndex = i;
                     for(var a = 0; a < needlecolorselect.model.count; ++a) if (needlecolorselect.textAt(a) === needlecolor)needlecolorselect.currentIndex = a ;
+                    if (needleStyleLoader.item && needleStyleLoader.item.needleModel) {
+                        var nm = needleStyleLoader.item.needleModel
+                        needleStyleCombo.currentIndex = Math.max(0, Math.min(needleStyleIndex, nm.count - 1))
+                    }
 
                 }
             }
@@ -1004,11 +1169,11 @@ Rectangle{
     Rectangle{
         color: "darkgrey"
         width:popupmenu.width
-        height: 460
+        height: 540
         radius: 10
 
         Grid {
-            rows: 25
+            rows: 27
             leftPadding: 5
             rowSpacing :5
 
@@ -1072,6 +1237,28 @@ Rectangle{
                     width: needlecolor2select.width
                     height: needlecolor2select.height
                     color:  needlecolor2select.currentText
+                }
+            }
+
+            Text {
+                text: Translator.translate("Needle style", Dashboard.language)
+                font.bold: true
+                font.pixelSize: 15}
+            ComboBox {
+                id: needleStyleCombo
+                width: popupmenu.width /1.07
+                font.pixelSize: 15
+                textRole: "name"
+                model: needleStyleLoader.item ? needleStyleLoader.item.needleModel : 0
+                currentIndex: needleStyleIndex
+                onCurrentIndexChanged: {
+                    if (_needleListReady && currentIndex !== needleStyleIndex)
+                        needleStyleIndex = currentIndex
+                }
+                delegate: ItemDelegate {
+                    width: needleStyleCombo.width
+                    font.pixelSize: 15
+                    text: model.name
                 }
             }
 

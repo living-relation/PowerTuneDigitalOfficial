@@ -1,7 +1,15 @@
 import QtQuick 2.8
 
-ListModel {
-    id: needleStyleModel
+// Root Item so a Loader can host this and expose the model to parents.
+Item {
+    id: root
+    property alias needleModel: needleStyleModel
+    width: 0
+    height: 0
+    visible: false
+
+    ListModel {
+        id: needleStyleModel
     ListElement {
         name: "Default (Canvas)"
         source: ""
@@ -61,5 +69,21 @@ ListModel {
         name: "Turbo Blade"
         source: "qrc:/graphics/Needles/needle_turbo-blade.svg"
         isCanvas: false
+    }
+    ListElement {
+        name: "Aurora Edge"
+        source: "qrc:/graphics/Needles/needle_aurora-edge.svg"
+        isCanvas: false
+    }
+    ListElement {
+        name: "Stealth Mono"
+        source: "qrc:/graphics/Needles/needle_stealth-mono.svg"
+        isCanvas: false
+    }
+    ListElement {
+        name: "Pro Carbon"
+        source: "qrc:/graphics/Needles/needle_pro-carbon.svg"
+        isCanvas: false
+    }
     }
 }

@@ -19,6 +19,10 @@ ApplicationWindow {
     id:window
     visible: true
 
+    // Shared UI chrome (drawer, settings tabs use matching tones)
+    readonly property color ptSurface: Qt.rgba(0.11, 0.12, 0.16, 0.95)
+    readonly property color ptFrame: Qt.rgba(0.28, 0.55, 0.82, 0.5)
+
     //width: 1600
     //height: 720
     width: Screen.desktopAvailableWidth
@@ -280,13 +284,15 @@ ApplicationWindow {
         height: 0.5 * window.height
         edge: Qt.TopEdge
         background: Rectangle {
-            color: "grey"
-            opacity: 0.8
+            color: window.ptSurface
+            radius: 8
+            border.width: 1
+            border.color: window.ptFrame
             Rectangle {
                 x: parent.width - 3
                 width: 1
                 height: parent.height
-                color: "black"
+                color: Qt.rgba(0, 0, 0, 0.25)
             }
         }
 

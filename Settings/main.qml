@@ -7,7 +7,7 @@ import "qrc:/Translator.js" as Translator
 Rectangle {
     id: windowbackround
     anchors.fill: parent
-    color: "grey"
+    color: Qt.rgba(0.1, 0.11, 0.15, 1)
     property int test1: 0
     property int connected: 0
     property var gpscom
