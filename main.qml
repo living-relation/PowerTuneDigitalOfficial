@@ -60,7 +60,9 @@ ApplicationWindow {
     Settings{
         id: appSettings
         property alias sampleActionEnabled: popUpLoader.enabled
-
+        // When true, first SwipeView page uses IntroFast.qml (no file:// logo) for a quicker first paint.
+        // Set to false to use classic Intro.qml (file:///home/pi/Logo/Logo.png on device).
+        property bool useFastIntroSplash: true
     }
 
     // Custom font loaders - register all PowerTune fonts
@@ -201,8 +203,7 @@ ApplicationWindow {
         Loader {
             id: firstPageLoader
             //active: SwipeView.isCurrentItem || SwipeView.isPreviousItem || firstPageLoader.source == "qrc:/GPSTracks/Laptimer.qml"
-            source: "qrc:/Intro.qml"
-
+            source: appSettings.useFastIntroSplash ? "qrc:/IntroFast.qml" : "qrc:/Intro.qml"
         }
 
         Loader {
