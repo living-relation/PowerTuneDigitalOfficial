@@ -41,7 +41,6 @@ Item {
     property int parser
     property int touchCounter: 0
     property real lastTouchTime: 0
-    property string activeSourceProfile: "CAN_ONLY"
 
     Drag.active: true
     MyTextLabel{x:10
@@ -539,52 +538,13 @@ Item {
             }
         }
         */
-        ListModel { id: filteredSourcesModel }
-        function isCalculatedSource(sourceName) {
-            return sourceName === "speed" || sourceName === "rpm" || sourceName === "FuelLevel"
-                   || sourceName === "reactiontime" || sourceName === "sixtyfoottime"
-                   || sourceName === "sixtyfootspeed" || sourceName === "threehundredthirtyfoottime"
-                   || sourceName === "threehundredthirtyfootspeed" || sourceName === "eightmiletime"
-                   || sourceName === "eightmilespeed" || sourceName === "quartermiletime"
-                   || sourceName === "quartermilespeed" || sourceName === "thousandfoottime"
-                   || sourceName === "thousandfootspeed" || sourceName === "zerotohundredt"
-                   || sourceName === "hundredtotwohundredtime" || sourceName === "twohundredtothreehundredtime";
-        }
-        function sourceAllowedForProfile(sourceObj) {
-            var ecus = (sourceObj.supportedECUs || "").toString();
-            var isExtenderOnly = ecus.indexOf("Extender") !== -1;
-            var isApexiOnly = ecus.indexOf("Apexi") !== -1 || ecus.indexOf("SAFC") !== -1;
-            var isObdOnly = ecus.indexOf("OBD") !== -1;
-            if (activeSourceProfile === "CAN_ONLY") {
-                if (isCalculatedSource(sourceObj.sourcename))
-                    return true;
-                return !isExtenderOnly && !isApexiOnly && !isObdOnly;
-            }
-            return true;
-        }
-        function rebuildFilteredSources() {
-            filteredSourcesModel.clear();
-            for (var i = 0; i < powertunedatasource.count; ++i) {
-                var sourceObj = powertunedatasource.get(i);
-                if (sourceAllowedForProfile(sourceObj)) {
-                    var title = (sourceObj.titlename !== undefined && sourceObj.titlename !== null
-                                 && String(sourceObj.titlename) !== "")
-                                ? String(sourceObj.titlename) : String(sourceObj.sourcename);
-                    filteredSourcesModel.append({"sourceIndex": i, "titlename": title});
-                }
-            }
-            if (filteredSourcesModel.count > 0 && cbx_sources.currentIndex < 0)
-                cbx_sources.currentIndex = 0;
-        }
         ComboBox {
             id: cbx_sources
             font.pixelSize: 14
             textRole: "titlename"
             width: parent.width
             height: parent.height * 0.083
-            model: filteredSourcesModel
-            property int selectedSourceIndex: (currentIndex >= 0 && currentIndex < filteredSourcesModel.count)
-                                              ? filteredSourcesModel.get(currentIndex).sourceIndex : 0
+            model: powertunedatasource
             delegate: ItemDelegate {
                 width: cbx_sources.width
                 text: cbx_sources.textRole ? (Array.isArray(cbx_sources.model) ? modelData[cbx_sources.textRole] : model[cbx_sources.textRole]) : modelData
@@ -595,7 +555,6 @@ Item {
                 hoverEnabled: cbx_sources.hoverEnabled
             }
             Component.onCompleted: {
-                squaregaugemenu.rebuildFilteredSources()
                 if(mainwindow.width == 1600){
                     cbx_sources.font.pixelSize = 18;
                 }
@@ -641,8 +600,8 @@ Item {
                 text:  Translator.translate("Square", Dashboard.language)
                 font.pixelSize: mainwindow.width * 0.015
                 onClicked: {
-                    console.log(powertunedatasource.get(cbx_sources.selectedSourceIndex).decimalpoints);
-                    CreateSquareGaugeScript.createSquareGauge(266,119,0,240,248,powertunedatasource.get(cbx_sources.selectedSourceIndex).decimalpoints,powertunedatasource.get(cbx_sources.selectedSourceIndex).defaultsymbol,powertunedatasource.get(cbx_sources.selectedSourceIndex).titlename,false,true,false,"Dashboard",powertunedatasource.get(cbx_sources.selectedSourceIndex).sourcename,powertunedatasource.get(cbx_sources.selectedSourceIndex).sourcename,10000,-20000,"lightsteelblue","black","lightsteelblue","white","white","blue",25,40,powertunedatasource.get(cbx_sources.selectedSourceIndex).decimalpoints2,"Lato","Lato");
+                    console.log(powertunedatasource.get(cbx_sources.currentIndex).decimalpoints);
+                    CreateSquareGaugeScript.createSquareGauge(266,119,0,240,248,powertunedatasource.get(cbx_sources.currentIndex).decimalpoints,powertunedatasource.get(cbx_sources.currentIndex).defaultsymbol,powertunedatasource.get(cbx_sources.currentIndex).titlename,false,true,false,"Dashboard",powertunedatasource.get(cbx_sources.currentIndex).sourcename,powertunedatasource.get(cbx_sources.currentIndex).sourcename,10000,-20000,"lightsteelblue","black","lightsteelblue","white","white","blue",25,40,powertunedatasource.get(cbx_sources.currentIndex).decimalpoints2,"Lato","Lato");
                     squaregaugemenu.visible = false;
                     selectcolor.visible =false;
                     Dashboard.setdraggable(0);
@@ -655,7 +614,7 @@ Item {
                 text: Translator.translate("Bar", Dashboard.language)
                 font.pixelSize: mainwindow.width * 0.015
                 onClicked: {
-                    CreateBargaugeScript.createVerticalGauge(320,80,10,0,0,8000,powertunedatasource.get(cbx_sources.selectedSourceIndex).decimalpoints,powertunedatasource.get(cbx_sources.selectedSourceIndex).titlename,powertunedatasource.get(cbx_sources.selectedSourceIndex).sourcename,1000,0);
+                    CreateBargaugeScript.createVerticalGauge(320,80,10,0,0,8000,powertunedatasource.get(cbx_sources.currentIndex).decimalpoints,powertunedatasource.get(cbx_sources.currentIndex).titlename,powertunedatasource.get(cbx_sources.currentIndex).sourcename,1000,0);
                     squaregaugemenu.visible = false;
                     selectcolor.visible =false;
                     Dashboard.setdraggable(0);
@@ -668,7 +627,7 @@ Item {
                 text: Translator.translate("Round", Dashboard.language)
                 font.pixelSize: mainwindow.width * 0.015
                 onClicked: {
-                    CreateRoundgaugeScript.createRoundGauge(400,20,20,powertunedatasource.get(cbx_sources.selectedSourceIndex).sourcename,powertunedatasource.get(cbx_sources.selectedSourceIndex).maxvalue,0,powertunedatasource.get(cbx_sources.selectedSourceIndex).maxvalue,-1000,-145,90,powertunedatasource.get(cbx_sources.selectedSourceIndex).maxvalue,powertunedatasource.get(cbx_sources.selectedSourceIndex).divisor,powertunedatasource.get(cbx_sources.selectedSourceIndex).stepsize,1,powertunedatasource.get(cbx_sources.selectedSourceIndex).stepsize,powertunedatasource.get(cbx_sources.selectedSourceIndex).decimalpoints,2,38,3,3,8,3,15,5,0.50,0.40,0.33,0.25,20,5,93,8,0,0,"red","darkred","aliceblue","red","grey","darkgrey","darkgrey","black","grey","black","dodgerblue","deepskyblue","lightskyblue","transparent",true,true,true,"Lato",30,50,10,false,"Lato",powertunedatasource.get(cbx_sources.selectedSourceIndex).titlename,"red",0,0,0,0,0,0,"false");
+                    CreateRoundgaugeScript.createRoundGauge(400,20,20,powertunedatasource.get(cbx_sources.currentIndex).sourcename,powertunedatasource.get(cbx_sources.currentIndex).maxvalue,0,powertunedatasource.get(cbx_sources.currentIndex).maxvalue,-1000,-145,90,powertunedatasource.get(cbx_sources.currentIndex).maxvalue,powertunedatasource.get(cbx_sources.currentIndex).divisor,powertunedatasource.get(cbx_sources.currentIndex).stepsize,1,powertunedatasource.get(cbx_sources.currentIndex).stepsize,powertunedatasource.get(cbx_sources.currentIndex).decimalpoints,2,38,3,3,8,3,15,5,0.50,0.40,0.33,0.25,20,5,93,8,0,0,"red","darkred","aliceblue","red","grey","darkgrey","darkgrey","black","grey","black","dodgerblue","deepskyblue","lightskyblue","transparent",true,true,true,"Lato",30,50,10,false,"Lato",powertunedatasource.get(cbx_sources.currentIndex).titlename,"red",0,0,0,0,0,0,"false");
                     squaregaugemenu.visible = false;
                     selectcolor.visible =false;
                     Dashboard.setdraggable(0);

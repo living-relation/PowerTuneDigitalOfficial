@@ -1996,7 +1996,6 @@ ListModel {
 
     ListElement {
         sourcename:"Inj"
-        titlename: "Inj"
         supportedECUs: ""
     }
     ListElement {
