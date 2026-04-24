@@ -61,7 +61,6 @@ Item {
                 Connect.readavailablebackrounds();
             }
         }
-      
         }
     }
     Timer {
