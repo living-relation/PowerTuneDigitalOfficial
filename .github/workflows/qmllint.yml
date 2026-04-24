@@ -1,12 +1,13 @@
 name: Lint
 
-on:name: Lint
-
 on:
   push:
     branches: [develop]
   pull_request:
     types: [assigned, opened, synchronize, reopened]
+
+permissions:
+  contents: read
 
 jobs:
   lint:
@@ -19,23 +20,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y qt6-declarative-dev-tools
-          
+
       - name: Run QML lint
         run: |
           find . -name "*.qml" -exec qmllint {} +
-  push:
-    branches: [develop]
-  pull_request:
-    types: [assigned, opened, synchronize, reopened]
-
-jobs:
-  lint:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Validate QML and JavaScript files
-        uses: liri-infra/qmllint-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
