@@ -112,8 +112,8 @@ Item {
         border.color: Qt.rgba(1, 1, 1, 0.25)
         border.width: 1
         visible: false
-        width : 200
-        height :480
+        width : 280
+        height :600
         x: 0
         y: 0
         z: 1000         //ensure the Menu is always in the foreground
@@ -255,9 +255,9 @@ Item {
             }
             ComboBox {
                 id: cbx_sources
-                font.pixelSize: 15
+                font.pixelSize: 18
                 textRole: "titlename"
-                width: 200
+                width: parent.width
                 height: 40
                 model: powertunedatasource
                 currentIndex: 1

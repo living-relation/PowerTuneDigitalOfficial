@@ -260,7 +260,7 @@ Item {
                 btnaddStatePicture.visible = true;
                 btnaddStateGIF.visible = true;
                 btnaddBar.visible = true;
-                Dashboard.setdraggable(1);
+                Dashboard.setdraggable(0);
             }
         }
     }
@@ -447,7 +447,7 @@ Item {
     /// The Gauge Creation Menu
     Rectangle{
         id: squaregaugemenu
-        width: mainwindow.width * 0.24 //200
+        width: mainwindow.width * 0.34 // larger tap targets
         height: mainwindow.height * 0.83 //400
         color : "darkgrey"
         x :590
@@ -540,7 +540,7 @@ Item {
         */
         ComboBox {
             id: cbx_sources
-            font.pixelSize: 14
+            font.pixelSize: 18
             textRole: "titlename"
             width: parent.width
             height: parent.height * 0.083
