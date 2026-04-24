@@ -19,16 +19,16 @@ Rectangle {
     //STAGING Lights
     Connections{
         target: Dashboard
-        onSpeedChanged :{speedchange.start()}
+        function onSpeedChanged() { speedchange.start() }
     }
     Connections{
         target: Dashboard
-        onSpeedunitsChanged :{units.start()}
+        function onSpeedunitsChanged() { units.start() }
     }
 
     Connections{
         target: Dashboard
-        onReactiontimeChanged :{reactiontimecheck.start()}
+        function onReactiontimeChanged() { reactiontimecheck.start() }
     }
 
 
@@ -69,15 +69,15 @@ Rectangle {
         {
         if (Dashboard.speedunits === "metric")
         {
-            hundred.text = "0-100 km/h TIME: "
-            twohundred.text = "100-200 km/h TIME: "
-            threehundred.text = "200-300 km/h TIME: "
+            hundredTimeText.text = "0-100 km/h TIME: "
+            twoHundredTimeText.text = "100-200 km/h TIME: "
+            threeHundredTimeText.text = "200-300 km/h TIME: "
         }
         else
         {
-            hundred.text = "0-60 mph TIME: "
-            twohundred.text = "60-120 mph TIME: "
-            threehundred.text = "120-180 mph TIME: "
+            hundredTimeText.text = "0-60 mph TIME: "
+            twoHundredTimeText.text = "60-120 mph TIME: "
+            threeHundredTimeText.text = "120-180 mph TIME: "
 
         }
         }

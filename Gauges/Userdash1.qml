@@ -103,8 +103,8 @@ Item {
     Connections{
         target: Dashboard
 
-        onBackroundpicturesChanged: updatppiclist();
-        onDashsetup1Changed:
+        function onBackroundpicturesChanged() { updatppiclist(); }
+        function onDashsetup1Changed()
         {
             if (dashvalue.textAt(1) !== "") {
 
@@ -152,7 +152,6 @@ Item {
             }
 
         }
-
     }
 
     Loader{
@@ -565,12 +564,16 @@ Item {
             }
             return true;
         }
-        function squaregaugemenu.rebuildFilteredSources() {
+        function rebuildFilteredSources() {
             filteredSourcesModel.clear();
             for (var i = 0; i < powertunedatasource.count; ++i) {
                 var sourceObj = powertunedatasource.get(i);
-                if (sourceAllowedForProfile(sourceObj))
-                    filteredSourcesModel.append({"sourceIndex": i, "titlename": sourceObj.titlename});
+                if (sourceAllowedForProfile(sourceObj)) {
+                    var title = (sourceObj.titlename !== undefined && sourceObj.titlename !== null
+                                 && String(sourceObj.titlename) !== "")
+                                ? String(sourceObj.titlename) : String(sourceObj.sourcename);
+                    filteredSourcesModel.append({"sourceIndex": i, "titlename": title});
+                }
             }
             if (filteredSourcesModel.count > 0 && cbx_sources.currentIndex < 0)
                 cbx_sources.currentIndex = 0;
@@ -596,7 +599,7 @@ Item {
             Component.onCompleted: {
                 squaregaugemenu.rebuildFilteredSources()
                 if(mainwindow.width == 1600){
-                    cbx_sources.font.pixelSize == 18;
+                    cbx_sources.font.pixelSize = 18;
                 }
             }
         }
