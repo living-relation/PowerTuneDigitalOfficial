@@ -62,7 +62,7 @@ ApplicationWindow {
         property alias sampleActionEnabled: popUpLoader.enabled
         // When true, first SwipeView page uses IntroFast.qml (no file:// logo) for a quicker first paint.
         // Set to false to use classic Intro.qml (file:///home/pi/Logo/Logo.png on device).
-        property bool useFastIntroSplash: true
+        property bool useFastIntroSplash: false
     }
 
     // Custom font loaders - register all PowerTune fonts

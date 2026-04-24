@@ -260,7 +260,7 @@ Item {
                 btnaddStatePicture.visible = true;
                 btnaddStateGIF.visible = true;
                 btnaddBar.visible = true;
-                Dashboard.setdraggable(0);
+                Dashboard.setdraggable(1);
             }
         }
     }
