@@ -807,7 +807,7 @@ Rectangle{
     Rectangle {
         color: "darkgrey"
         width:popupmenu.width
-        height: 430
+        height: 340
         radius: 10
         MouseArea {
             anchors.fill: parent

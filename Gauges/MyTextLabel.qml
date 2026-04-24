@@ -112,8 +112,8 @@ Item {
         border.color: Qt.rgba(1, 1, 1, 0.25)
         border.width: 1
         visible: false
-        width : 280
-        height :600
+        width : 200
+        height :480
         x: 0
         y: 0
         z: 1000         //ensure the Menu is always in the foreground
