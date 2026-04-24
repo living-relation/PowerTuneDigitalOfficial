@@ -115,12 +115,9 @@ ApplicationWindow {
         id: keyboardcontainer
         color: "transparent"
         visible: false
-        border.width: 1
-        border.color: Qt.rgba(1, 1, 1, 0.75)
-        radius: 4
 
-        width: Screen.desktopAvailableWidth * 0.40
-        height: Screen.desktopAvailableHeight * 0.28
+        width: Screen.desktopAvailableWidth * 0.50
+        height: Screen.desktopAvailableHeight * 0.40
         z: Screen.desktopAvailableHeight * 0.5
 
         // Small drag handle bar at top
@@ -188,9 +185,6 @@ ApplicationWindow {
         currentIndex: 0
 
         onCurrentIndexChanged: {
-            keyboardcontainer.visible = false
-            keyboard.visible = false
-            Qt.inputMethod.hide()
             if (dashView.currentIndex != 0){
                // //console.log("Object Closed")
             }

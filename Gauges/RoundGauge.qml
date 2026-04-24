@@ -809,10 +809,6 @@ Rectangle{
         width:popupmenu.width
         height: 340
         radius: 10
-        MouseArea {
-            anchors.fill: parent
-            drag.target: parent
-        }
         Grid {
             id :gaugesizesmenuegrid
             rows: 15
@@ -987,11 +983,7 @@ Rectangle{
         color: "darkgrey"
         width:popupmenu.width
         radius: 10
-        height: 430
-        MouseArea {
-            anchors.fill: parent
-            drag.target: parent
-        }
+        height: 365
         Column {
             anchors.fill: parent
             spacing: 10
@@ -1138,12 +1130,8 @@ Rectangle{
     Rectangle{
         color: "darkgrey"
         width:popupmenu.width
-        height: 620
+        height: 540
         radius: 10
-        MouseArea {
-            anchors.fill: parent
-            drag.target: parent
-        }
 
         Grid {
             rows: 27
@@ -1343,12 +1331,8 @@ Rectangle{
     Rectangle{
         color: "darkgrey"
         width:popupmenu.width
-        height: 300
+        height: 260
         radius: 10
-        MouseArea {
-            anchors.fill: parent
-            drag.target: parent
-        }
         Grid {
             rows: 12
             leftPadding: 5
@@ -1482,11 +1466,7 @@ Rectangle{
     Rectangle {
         color: "darkgrey"
         width:popupmenu.width
-        height: 500
-        MouseArea {
-            anchors.fill: parent
-            drag.target: parent
-        }
+        height: 440
         Grid {
             rows: 15
             rowSpacing :5
@@ -1921,11 +1901,7 @@ Menu{
 Rectangle{
         color: "darkgrey"
         width:popupmenu.width
-        height: 500
-        MouseArea {
-            anchors.fill: parent
-            drag.target: parent
-        }
+        height: 440
 
         Grid {
             rows: 20
@@ -2137,11 +2113,7 @@ Menu{
         color: "darkgrey"
         width:popupmenu.width
         radius: 10
-        height: 460
-        MouseArea {
-            anchors.fill: parent
-            drag.target: parent
-        }
+        height: 400
         Grid {
             rows: 12
             rowSpacing :5
@@ -2316,11 +2288,7 @@ Menu{
         color: "darkgrey"
         width:popupmenu.width
         radius: 10
-        height: 520
-        MouseArea {
-            anchors.fill: parent
-            drag.target: parent
-        }
+        height: 440
         Grid {
             rows: 13
             rowSpacing :5

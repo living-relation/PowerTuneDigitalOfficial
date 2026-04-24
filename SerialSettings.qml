@@ -43,7 +43,7 @@ Quick1.TabView {
                 width: parent.width - 10
                 wrapMode: Text.Wrap
                 anchors.centerIn: parent
-                font.pixelSize: tabView.width / 58
+                font.pixelSize: tabView.width / 45
                 font.bold: styleData.selected
                 text: styleData.title
                 color: styleData.selected ? "white" : Qt.rgba(0.85, 0.88, 0.92, 1)
