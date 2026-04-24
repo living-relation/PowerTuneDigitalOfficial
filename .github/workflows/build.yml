@@ -1,5 +1,9 @@
 name: Test build
 on: [pull_request]
+
+permissions:
+  contents: read
+
 jobs:
   test_build:
     runs-on: ubuntu-latest
