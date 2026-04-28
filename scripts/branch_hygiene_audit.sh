@@ -20,7 +20,11 @@ fi
 
 SANITIZED_TRUNK="${TRUNK_BRANCH//\//-}"
 SNAPSHOT_TAG="archive/${SNAPSHOT_PREFIX}/${TIMESTAMP}/${SANITIZED_TRUNK}"
-git tag -f "${SNAPSHOT_TAG}" "refs/remotes/origin/${TRUNK_BRANCH}" >/dev/null
+if git rev-parse --verify --quiet "refs/tags/${SNAPSHOT_TAG}" >/dev/null; then
+  echo "WARN: snapshot tag ${SNAPSHOT_TAG} already exists; leaving existing tag unchanged." >&2
+else
+  git tag "${SNAPSHOT_TAG}" "refs/remotes/origin/${TRUNK_BRANCH}" >/dev/null
+fi
 
 while IFS= read -r ref; do
   branch="${ref#origin/}"
