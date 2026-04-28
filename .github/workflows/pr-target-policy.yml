@@ -1,0 +1,34 @@
+name: PR target policy
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+
+permissions:
+  contents: read
+
+jobs:
+  enforce-target:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR target repository and branch
+        env:
+          EXPECTED_REPO: living-relation/PowerTuneDigitalOfficial
+          BASE_REPO: ${{ github.event.pull_request.base.repo.full_name }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+        run: |
+          if [ "${BASE_REPO}" != "${EXPECTED_REPO}" ]; then
+            echo "PR base repository must be ${EXPECTED_REPO}; got ${BASE_REPO}."
+            exit 1
+          fi
+
+          if [ "${BASE_BRANCH}" != "main" ]; then
+            echo "PR base branch must be main; got ${BASE_BRANCH}."
+            exit 1
+          fi
+
+          echo "PR target policy check passed."

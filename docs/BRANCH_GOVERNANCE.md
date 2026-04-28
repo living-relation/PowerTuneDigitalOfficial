@@ -5,6 +5,7 @@
 - Canonical trunk: `main`
 - Default PR merge strategy: **Rebase and merge**
 - Linear policy: no merge commits into trunk
+- PR target policy: only `living-relation/PowerTuneDigitalOfficial` with base branch `main`
 
 ## Temporary freeze during reconciliation
 
@@ -59,5 +60,6 @@ TRUNK_BRANCH=main STALE_DAYS=90 DRY_RUN=false PRESERVE_ARCHIVE_TAGS=true bash sc
 1. No unreconciled unique commits remain outside `main`, `recovery/*`, or `archive/*`.
 2. Recovery branches are deduplicated before integration.
 3. Integration PRs are rebased and linear.
-4. CI is green for integrated commits.
-5. Final audit report is stored in `artifacts/branch-hygiene/<timestamp>/`.
+4. PR target policy check passes (repo + branch guard).
+5. CI is green for integrated commits.
+6. Final audit report is stored in `artifacts/branch-hygiene/<timestamp>/`.
