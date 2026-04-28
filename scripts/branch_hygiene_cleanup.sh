@@ -70,7 +70,7 @@ while IFS= read -r branch; do
       if git rev-parse --verify --quiet "refs/tags/${tag_name}" >/dev/null; then
         echo "SKIP tag exists ${tag_name}" >> "${OUT_DIR}/actions.log"
       else
-        git tag "${tag_name}" "refs/remotes/origin/${branch}" >/dev/null
+        git tag "${tag_name}" "refs/remotes/origin/${branch}"
         echo "TAGGED ${tag_name} -> origin/${branch}" >> "${OUT_DIR}/actions.log"
       fi
     fi

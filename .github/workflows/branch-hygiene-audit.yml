@@ -16,7 +16,7 @@ on:
         required: false
         default: "true"
   schedule:
-    # Weekly Monday 02:30 UTC to generate branch hygiene snapshots outside peak contributor hours.
+    # Mondays at 02:30 UTC to generate branch hygiene snapshots outside peak contributor hours.
     - cron: "30 2 * * 1"
 
 permissions:

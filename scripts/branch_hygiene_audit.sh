@@ -23,7 +23,7 @@ SNAPSHOT_TAG="archive/${SNAPSHOT_PREFIX}/${TIMESTAMP}/${SANITIZED_TRUNK}"
 if git rev-parse --verify --quiet "refs/tags/${SNAPSHOT_TAG}" >/dev/null; then
   echo "WARN: snapshot tag ${SNAPSHOT_TAG} already exists; leaving existing tag unchanged." >&2
 else
-  git tag "${SNAPSHOT_TAG}" "refs/remotes/origin/${TRUNK_BRANCH}" >/dev/null
+  git tag "${SNAPSHOT_TAG}" "refs/remotes/origin/${TRUNK_BRANCH}"
 fi
 
 while IFS= read -r ref; do
