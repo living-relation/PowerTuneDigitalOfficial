@@ -1,0 +1,9 @@
+{
+    "claudeCode.allowDangerouslySkipPermissions": true,
+    "claudeCode.disableLoginPrompt": true,
+    "claudeCode.enableNewConversationShortcut": true,
+    "claudeCode.hideOnboarding": true,
+    "claudeCode.initialPermissionMode": "acceptEdits",
+    "claudeCode.usePythonEnvironment": false,
+    "claudeCode.useTerminal": true
+}
