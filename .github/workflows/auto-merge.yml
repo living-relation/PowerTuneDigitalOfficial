@@ -14,7 +14,13 @@ permissions:
 
 jobs:
   enable-auto-merge:
-    if: ${{ github.repository == 'living-relation/PowerTuneDigitalOfficial' && github.event.pull_request.base.repo.full_name == 'living-relation/PowerTuneDigitalOfficial' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.draft == false }}
+    if: >-
+      ${{
+        github.repository == 'living-relation/PowerTuneDigitalOfficial' &&
+        github.event.pull_request.base.repo.full_name == 'living-relation/PowerTuneDigitalOfficial' &&
+        github.event.pull_request.base.ref == 'main' &&
+        github.event.pull_request.draft == false
+      }}
     runs-on: ubuntu-latest
     steps:
       - name: Enable auto-merge on this PR

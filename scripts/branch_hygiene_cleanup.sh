@@ -14,7 +14,7 @@ OUT_DIR="${OUT_ROOT}/${TIMESTAMP}"
 mkdir -p "$OUT_DIR"
 
 if ! git rev-parse --verify --quiet "refs/remotes/origin/${TRUNK_BRANCH}" >/dev/null; then
-  echo "Missing origin/${TRUNK_BRANCH}. Set TRUNK_BRANCH correctly." >&2
+  echo "Missing origin/${TRUNK_BRANCH}. Run 'git fetch --all --prune' (or fetch origin) and verify TRUNK_BRANCH." >&2
   exit 1
 fi
 
