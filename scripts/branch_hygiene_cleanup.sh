@@ -24,8 +24,8 @@ is_protected_branch() {
   local branch="$1"
   [[ "$branch" == "$TRUNK_BRANCH" ]] && return 0
   [[ "$branch" == "main" || "$branch" == "master" || "$branch" == "develop" ]] && return 0
-  [[ "$branch" == release/* || "$branch" == support/* || "$branch" == hotfix/* ]] && return 0
-  [[ "$branch" == recovery/* || "$branch" == archive/* ]] && return 0
+  [[ "$branch" =~ ^(release|support|hotfix)/ ]] && return 0
+  [[ "$branch" =~ ^(recovery|archive)/ ]] && return 0
   return 1
 }
 
