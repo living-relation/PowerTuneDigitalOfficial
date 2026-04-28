@@ -86,7 +86,7 @@ fi
 
 if ! git fsck --no-reflogs --lost-found --unreachable --no-progress \
   > "${OUT_DIR}/git-fsck.txt" 2>&1; then
-  echo "WARN: git fsck returned non-zero status; review ${OUT_DIR}/git-fsck.txt" >&2
+  echo "WARN: git fsck returned non-zero status (possible repository integrity or object reachability issues); review ${OUT_DIR}/git-fsck.txt" >&2
 fi
 grep 'dangling commit' "${OUT_DIR}/git-fsck.txt" | awk '{print $3}' > "${OUT_DIR}/lost-change-candidates-dangling.txt" || true
 

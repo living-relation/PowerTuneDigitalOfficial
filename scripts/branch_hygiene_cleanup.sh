@@ -63,7 +63,7 @@ awk -F'|' '$3=="delete-candidate"{print $1}' "${OUT_DIR}/stale-branch-evaluation
 while IFS= read -r branch; do
   [[ -z "$branch" ]] && continue
   if [[ "$PRESERVE_ARCHIVE_TAGS" == "true" ]]; then
-    tag_name="archive/pre-delete/${TIMESTAMP}/${branch//\//-}"
+    tag_name="archive/deleted-branches/${TIMESTAMP}/${branch//\//-}"
     if [[ "$DRY_RUN" == "true" ]]; then
       echo "DRY-RUN tag ${tag_name} -> origin/${branch}" >> "${OUT_DIR}/actions.log"
     else
