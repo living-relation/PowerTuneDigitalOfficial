@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+# Requires GNU coreutils (`date`) and git.
 
 TRUNK_BRANCH="${TRUNK_BRANCH:-main}"
 STALE_DAYS="${STALE_DAYS:-90}"

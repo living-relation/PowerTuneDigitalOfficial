@@ -249,6 +249,7 @@ jobs:
 
   merge-feature-disabled:
     needs: parse-command
+    # Mirrors merge-feature auth predicate so only one of the two jobs runs for the same command.
     if: ${{ env.ALLOW_FEATURE_BRANCH_AUTOMATION != 'true' && needs.parse-command.outputs.authorized == 'true' && needs.parse-command.outputs.mode == 'merge' }}
     runs-on: ubuntu-latest
     steps:

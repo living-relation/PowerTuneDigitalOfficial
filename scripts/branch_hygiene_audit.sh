@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+# Requires GNU coreutils (`date`) and git.
 
 TRUNK_BRANCH="${TRUNK_BRANCH:-main}"
 SNAPSHOT_PREFIX="${SNAPSHOT_PREFIX:-branch-hygiene}"
@@ -43,6 +44,7 @@ git for-each-ref \
     rc=$?
     set -e
     if [[ $rc -ne 0 ]]; then
+      echo "WARN: failed divergence check for branch ${branch}" >&2
       echo "${branch}|n/a|n/a|unknown"
       continue
     fi
@@ -82,10 +84,11 @@ if git rev-parse --verify --quiet "origin/${TRUNK_BRANCH}" >/dev/null; then
   git rev-list --all --not "origin/${TRUNK_BRANCH}" > "${OUT_DIR}/commits-not-on-trunk.txt"
 fi
 
-git fsck --no-reflogs --lost-found --unreachable --no-progress \
-  | grep 'dangling commit' \
-  | awk '{print $3}' \
-  > "${OUT_DIR}/lost-change-candidates-dangling.txt" || true
+if ! git fsck --no-reflogs --lost-found --unreachable --no-progress \
+  > "${OUT_DIR}/git-fsck.txt" 2>&1; then
+  echo "WARN: git fsck returned non-zero status; review ${OUT_DIR}/git-fsck.txt" >&2
+fi
+grep 'dangling commit' "${OUT_DIR}/git-fsck.txt" | awk '{print $3}' > "${OUT_DIR}/lost-change-candidates-dangling.txt" || true
 
 git reflog --date=iso --all > "${OUT_DIR}/reflog-all.txt"
 
@@ -103,6 +106,7 @@ git reflog --date=iso --all > "${OUT_DIR}/reflog-all.txt"
   echo "- orphan-risk-unmerged-branches.txt"
   echo "- orphan-risk-local-only-branches.txt"
   echo "- commits-not-on-trunk.txt"
+  echo "- git-fsck.txt"
   echo "- lost-change-candidates-dangling.txt"
   echo "- reflog-all.txt"
 } > "${OUT_DIR}/SUMMARY.md"
