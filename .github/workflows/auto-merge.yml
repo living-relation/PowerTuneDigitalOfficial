@@ -30,7 +30,7 @@ jobs:
                 `
                   mutation EnableAutoMerge($pullRequestId: ID!) {
                     enablePullRequestAutoMerge(
-                      input: { pullRequestId: $pullRequestId, mergeMethod: MERGE }
+                      input: { pullRequestId: $pullRequestId, mergeMethod: REBASE }
                     ) {
                       pullRequest {
                         number
