@@ -69,10 +69,10 @@ jobs:
             execSync('git fetch --all --prune', { stdio: 'inherit' });
 
             const defaultBranch = 'main';
-            const protected_patterns = [/^main$/, /^master$/, /^develop$/, /^release\//, /^hotfix\//, /^support\//, /^recovery\//, /^archive\//];
+            const protectedPatterns = [/^main$/, /^master$/, /^develop$/, /^release\//, /^hotfix\//, /^support\//, /^recovery\//, /^archive\//];
 
             function isProtected(branch) {
-              return protected_patterns.some(p => p.test(branch));
+              return protectedPatterns.some(p => p.test(branch));
             }
 
             // Get all remote branches
@@ -96,7 +96,10 @@ jobs:
               try {
                 execSync(`git merge-base --is-ancestor "origin/${branch}" "origin/${defaultBranch}"`, { stdio: 'pipe' });
                 isMerged = true;
-              } catch (_) {}
+                core.info(`${branch}: merged (git ancestry)`);
+              } catch (_) {
+                core.info(`${branch}: not merged via git ancestry, checking PRs...`);
+              }
 
               // Also check if there is a merged PR for this branch (handles squash/rebase merges)
               if (!isMerged) {
