@@ -60,8 +60,8 @@ dtoverlay=spi-bcm2835-overlay
 # Enable audio (loads snd_bcm2835)
 dtparam=audio=on
 
-#Disable Bluetooth
-dtoverlay=pi3-disable-bt
+# Disable Bluetooth (Pi 4: use disable-bt; pi3-disable-bt is for Pi 3 / Zero 2W)
+dtoverlay=disable-bt
 disable_splash=1
 gpu_mem=256
 enable_uart=1

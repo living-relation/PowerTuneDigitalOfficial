@@ -89,6 +89,22 @@ Rectangle{
     property string peakneedleoffset
     property string peakneedlevisible
 
+    // Visual style preset. 0 = Classic (existing look, fully backwards
+    // compatible). New saves append this field; older saves that lack it
+    // simply coerce to 0. Styles are layered on top of the base renderer
+    // without altering tickmark geometry or value mapping.
+    //   0 Classic, 1 Carbon, 2 Neon Glow, 3 Racing Digital, 4 Modern Flat,
+    //   5 Aurora, 6 Stealth, 7 Pro (layered on base; 0-4 unchanged)
+    property int gaugeStyleIndex: 0
+
+    readonly property var gaugeStyleNames: ["Classic", "Carbon", "Neon Glow", "Racing Digital", "Modern Flat", "Aurora", "Stealth", "Pro"]
+
+    // Keep legacy properties for compatibility with existing saved dashboards.
+    // Needle rendering is canvas-only.
+    property int needleStyleIndex: 0
+    property string needleImageSource: ""
+    property string ringcolor: "white"
+
     Drag.active: true
     DatasourcesList{id: powertunedatasource}
 
@@ -199,21 +215,21 @@ Rectangle{
 
 
 
-            needle: Rectangle {
+            needle: Item {
                 id:gaugeneedle
                 visible: needlevisible
                 y: outerRadius * (needleinset * 0.01)
                 implicitWidth: outerRadius * (needleBaseWidth *0.01)
                 implicitHeight: outerRadius *(needleLength *0.01)
-                antialiasing: true
-                color: "transparent"
+                layer.enabled: true
+                layer.smooth: true
+
                 Canvas {
                     id: needlecanvas
-                    anchors.centerIn: parent
-                    implicitWidth: parent.width
-                    implicitHeight: parent.height
-                    property real xCenter: parent.width / 2
-                    property real yCenter: parent.height / 2
+                    anchors.fill: parent
+                    renderStrategy: Canvas.Threaded
+                    property real xCenter: width / 2
+                    property real yCenter: height / 2
 
                     Connections {
                         target: roundGauge
@@ -222,15 +238,14 @@ Rectangle{
                         onNeedleTipWidthChanged: needlecanvas.requestPaint()
                     }
 
-
                     onPaint: {
                         var ctx = getContext("2d");
                         ctx.reset();
                         ctx.beginPath();
                         ctx.moveTo(xCenter, height);
-                        ctx.lineTo(xCenter - parent.width / 2, height - parent.width / 2);
+                        ctx.lineTo(xCenter - width / 2, height - width / 2);
                         ctx.lineTo(xCenter - needleTipWidth / 2, 0);
-                        ctx.lineTo(xCenter, yCenter - parent.height);
+                        ctx.lineTo(xCenter, yCenter - height);
                         ctx.lineTo(xCenter, 0);
                         ctx.closePath();
                         ctx.fillStyle = needlecolor2;
@@ -238,7 +253,7 @@ Rectangle{
 
                         ctx.beginPath();
                         ctx.moveTo(xCenter, height)
-                        ctx.lineTo(width, height - parent.width / 2);
+                        ctx.lineTo(width, height - width / 2);
                         ctx.lineTo(xCenter + needleTipWidth / 2, 0);
                         ctx.lineTo(xCenter, 0);
                         ctx.closePath();
@@ -268,6 +283,147 @@ Rectangle{
                 color: backroundcolor
                 anchors.centerIn: parent
                 radius: 360
+
+                // Non-destructive style overlays. These only paint additional
+                // visuals on top of the user-selected background colour; the
+                // tickmarks, labels and needle remain unchanged so that
+                // existing dashboards render identically when style index is 0.
+                Canvas {
+                    id: styleBackgroundCanvas
+                    anchors.fill: parent
+                    visible: gaugeStyleIndex > 0
+                    renderStrategy: Canvas.Threaded
+                    Connections {
+                        target: roundGauge
+                        onGaugeStyleIndexChanged: styleBackgroundCanvas.requestPaint()
+                    }
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.reset();
+                        var cx = width / 2;
+                        var cy = height / 2;
+                        var r  = Math.min(width, height) / 2;
+                        switch (gaugeStyleIndex) {
+                        case 1: { // Carbon — dark radial vignette with a subtle diagonal weave
+                            var g = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r);
+                            g.addColorStop(0, Qt.rgba(0.18, 0.18, 0.2, 1));
+                            g.addColorStop(1, Qt.rgba(0.05, 0.05, 0.06, 1));
+                            ctx.beginPath();
+                            ctx.fillStyle = g;
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.04);
+                            ctx.lineWidth = 1;
+                            var step = Math.max(6, r / 30);
+                            for (var i = -r; i < r; i += step) {
+                                ctx.beginPath();
+                                ctx.moveTo(cx - r, cy + i);
+                                ctx.lineTo(cx + r, cy + i - r);
+                                ctx.stroke();
+                            }
+                            break;
+                        }
+                        case 2: { // Neon Glow — dark core, glowing outer halo
+                            var g2 = ctx.createRadialGradient(cx, cy, r * 0.3, cx, cy, r);
+                            g2.addColorStop(0, Qt.rgba(0.04, 0.06, 0.1, 1));
+                            g2.addColorStop(0.9, Qt.rgba(0.02, 0.03, 0.06, 1));
+                            g2.addColorStop(1, Qt.rgba(0, 1, 1, 0.35));
+                            ctx.beginPath();
+                            ctx.fillStyle = g2;
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            break;
+                        }
+                        case 3: { // Racing Digital — flat near-black with hex grid
+                            ctx.beginPath();
+                            ctx.fillStyle = Qt.rgba(0.05, 0.05, 0.07, 1);
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.06);
+                            ctx.lineWidth = 1;
+                            var sHex = Math.max(8, r / 14);
+                            for (var x = -r; x < r; x += sHex * 1.5) {
+                                for (var y = -r; y < r; y += sHex * 1.732) {
+                                    var px = cx + x;
+                                    var py = cy + y + ((Math.floor(x / (sHex * 1.5)) % 2) ? sHex * 0.866 : 0);
+                                    if (Math.sqrt((px - cx) * (px - cx) + (py - cy) * (py - cy)) > r) continue;
+                                    ctx.beginPath();
+                                    for (var k = 0; k < 6; k++) {
+                                        var ang = (Math.PI / 3) * k;
+                                        var hx = px + sHex * 0.5 * Math.cos(ang);
+                                        var hy = py + sHex * 0.5 * Math.sin(ang);
+                                        if (k === 0) ctx.moveTo(hx, hy);
+                                        else ctx.lineTo(hx, hy);
+                                    }
+                                    ctx.closePath();
+                                    ctx.stroke();
+                                }
+                            }
+                            break;
+                        }
+                        case 4: { // Modern Flat — soft radial gradient, no pattern
+                            var g3 = ctx.createRadialGradient(cx, cy * 0.7, r * 0.1, cx, cy, r);
+                            g3.addColorStop(0, Qt.rgba(0.25, 0.27, 0.3, 1));
+                            g3.addColorStop(1, Qt.rgba(0.1, 0.11, 0.13, 1));
+                            ctx.beginPath();
+                            ctx.fillStyle = g3;
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            break;
+                        }
+                        case 5: { // Aurora — purple/blue night radial with soft bands
+                            var gA = ctx.createRadialGradient(cx, cy, r * 0.12, cx, cy, r);
+                            gA.addColorStop(0, Qt.rgba(0.12, 0.08, 0.22, 1));
+                            gA.addColorStop(0.55, Qt.rgba(0.05, 0.08, 0.18, 1));
+                            gA.addColorStop(1, Qt.rgba(0.2, 0.35, 0.55, 0.5));
+                            ctx.beginPath();
+                            ctx.fillStyle = gA;
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            for (var b = 0; b < 4; b++) {
+                                var ri = r * (0.6 + b * 0.1);
+                                ctx.beginPath();
+                                ctx.strokeStyle = Qt.rgba(0.45, 0.65, 0.95, 0.08 - b * 0.015);
+                                ctx.lineWidth = Math.max(1, r * 0.02);
+                                ctx.arc(cx, cy, ri, 0, Math.PI * 2);
+                                ctx.stroke();
+                            }
+                            break;
+                        }
+                        case 6: { // Stealth — near-black with subtle concentric rings
+                            ctx.beginPath();
+                            ctx.fillStyle = Qt.rgba(0.04, 0.045, 0.05, 1);
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            for (var k = 1; k <= 5; k++) {
+                                var rr = r * (0.2 + k * 0.14);
+                                ctx.beginPath();
+                                ctx.strokeStyle = Qt.rgba(0.2, 0.22, 0.25, 0.04 + k * 0.01);
+                                ctx.lineWidth = 1;
+                                ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+                                ctx.stroke();
+                            }
+                            break;
+                        }
+                        case 7: { // Pro — professional instrument blue-grey
+                            var gP = ctx.createRadialGradient(cx, cy * 0.55, r * 0.15, cx, cy, r);
+                            gP.addColorStop(0, Qt.rgba(0.18, 0.22, 0.3, 1));
+                            gP.addColorStop(0.85, Qt.rgba(0.1, 0.12, 0.16, 1));
+                            gP.addColorStop(1, Qt.rgba(0.06, 0.07, 0.1, 1));
+                            ctx.beginPath();
+                            ctx.fillStyle = gP;
+                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.strokeStyle = Qt.rgba(0.5, 0.6, 0.75, 0.2);
+                            ctx.lineWidth = Math.max(1, r * 0.02);
+                            ctx.arc(cx, cy, r * 0.35, 0, Math.PI * 2);
+                            ctx.stroke();
+                            break;
+                        }
+                        }
+                    }
+                }
                 Text{id: gaugedescription
                     x:  ((roundGauge.height / 100 ) *desctextx).toFixed(0)
                     y:  ((roundGauge.height / 100 ) *desctexty).toFixed(0)
@@ -283,6 +439,7 @@ Rectangle{
                     id:redcanvas
                     property int value: redareastart
                     anchors.fill: parent
+                    renderStrategy: Canvas.Threaded
                     onValueChanged: requestPaint()
                     function degreesToRadians(degrees) {
                         return degrees * (Math.PI / 180);
@@ -390,6 +547,101 @@ Rectangle{
         visible: ringvisible
         source: "qrc:/graphics/RoungGaugeRing.png"
     }
+
+    // Overlay ring accents driven by the selected gauge style. Rendered above
+    // the default ring image so it works whether or not the user has the
+    // outer ring PNG enabled. Classic (0) renders nothing here.
+    Canvas {
+        id: styleOverlayCanvas
+        anchors.fill: parent
+        visible: gaugeStyleIndex > 0
+        renderStrategy: Canvas.Threaded
+        Connections {
+            target: roundGauge
+            onGaugeStyleIndexChanged: styleOverlayCanvas.requestPaint()
+        }
+        onPaint: {
+            var ctx = getContext("2d");
+            ctx.reset();
+            var cx = width / 2;
+            var cy = height / 2;
+            var r  = Math.min(width, height) / 2;
+            switch (gaugeStyleIndex) {
+            case 2: { // Neon Glow — cyan outer ring + faint inner halo
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0, 1, 1, 0.85);
+                ctx.lineWidth = Math.max(2, r * 0.04);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0.2, 1, 1, 0.25);
+                ctx.lineWidth = Math.max(4, r * 0.09);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            case 3: { // Racing Digital — thin red accent ring
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0.9, 0.05, 0.1, 1);
+                ctx.lineWidth = Math.max(2, r * 0.025);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            case 4: { // Modern Flat — soft light bevel
+                var g = ctx.createLinearGradient(0, 0, 0, height);
+                g.addColorStop(0, Qt.rgba(1, 1, 1, 0.18));
+                g.addColorStop(1, Qt.rgba(0, 0, 0, 0.2));
+                ctx.beginPath();
+                ctx.strokeStyle = g;
+                ctx.lineWidth = Math.max(2, r * 0.03);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            case 1: { // Carbon — darker edge
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0, 0, 0, 0.8);
+                ctx.lineWidth = Math.max(2, r * 0.025);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            case 5: { // Aurora — dual accent rings
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0.4, 0.55, 0.95, 0.75);
+                ctx.lineWidth = Math.max(2, r * 0.028);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0.6, 0.35, 0.9, 0.35);
+                ctx.lineWidth = Math.max(3, r * 0.05);
+                ctx.arc(cx, cy, r * 0.88, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            case 6: { // Stealth — thin light outline
+                ctx.beginPath();
+                ctx.strokeStyle = Qt.rgba(0.35, 0.38, 0.42, 0.5);
+                ctx.lineWidth = Math.max(1, r * 0.02);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            case 7: { // Pro — highlight top arc
+                var gP2 = ctx.createLinearGradient(0, 0, width, height);
+                gP2.addColorStop(0, Qt.rgba(0.5, 0.65, 0.9, 0.45));
+                gP2.addColorStop(1, Qt.rgba(0.1, 0.12, 0.2, 0.25));
+                ctx.beginPath();
+                ctx.strokeStyle = gP2;
+                ctx.lineWidth = Math.max(2, r * 0.03);
+                ctx.arc(cx, cy, r - ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            }
+            }
+        }
+    }
     Item {
         id: menustructure
 
@@ -428,7 +680,6 @@ Rectangle{
                 onClicked: {needlemenu.popup(touchArea.mouseX, touchArea.mouseY);
                     for(var i = 0; i < needlecolor2select.model.count; ++i) if (needlecolor2select.textAt(i) === needlecolor2)needlecolor2select.currentIndex = i;
                     for(var a = 0; a < needlecolorselect.model.count; ++a) if (needlecolorselect.textAt(a) === needlecolor)needlecolorselect.currentIndex = a ;
-
                 }
             }
             MenuItem {
@@ -634,6 +885,63 @@ Rectangle{
                     color:  backroundcolorselect.currentText
                 }
             }
+            Text {
+                text: "Ring color"
+                font.bold: true
+                font.pixelSize: 15}
+
+            ComboBox {
+                id: ringcolorselect
+                width: popupmenu.width /1.07
+                model: ColorList{}
+                visible: true
+                font.pixelSize: 15
+                currentIndex: 1
+                onCurrentIndexChanged: {
+                    ring.tintColor = ringcolorselect.textAt(ringcolorselect.currentIndex)
+                    ring.color = ring.tintColor
+                }
+                delegate: ItemDelegate {
+                    width: ringcolorselect.width
+                    font.pixelSize: 15
+                    Rectangle {
+                        width: ringcolorselect.width
+                        height: 50
+                        color: itemColor
+                        Text {
+                            text: itemColor
+                            anchors.centerIn: parent
+                            font.pixelSize: 15
+                        }
+                    }
+                }
+                background: Rectangle{
+                    width: ringcolorselect.width
+                    height: ringcolorselect.height
+                    color: ringcolorselect.currentText
+                }
+            }
+
+            Text {
+                text: Translator.translate("Gauge style", Dashboard.language)
+                font.bold: true
+                font.pixelSize: 15}
+
+            ComboBox {
+                id: gaugeStyleSelect
+                width: popupmenu.width /1.07
+                model: gaugeStyleNames
+                font.pixelSize: 15
+                currentIndex: gaugeStyleIndex
+                onCurrentIndexChanged: {
+                    gaugeStyleIndex = gaugeStyleSelect.currentIndex;
+                }
+                delegate: ItemDelegate {
+                    width: gaugeStyleSelect.width
+                    font.pixelSize: 15
+                    text: modelData
+                }
+            }
 
             RoundButton{
                 text: Translator.translate("Needle visible", Dashboard.language)
@@ -822,11 +1130,11 @@ Rectangle{
     Rectangle{
         color: "darkgrey"
         width:popupmenu.width
-        height: 460
+        height: 540
         radius: 10
 
         Grid {
-            rows: 25
+            rows: 27
             leftPadding: 5
             rowSpacing :5
 
@@ -894,7 +1202,7 @@ Rectangle{
             }
 
             Text {
-                text: Translator.translate("Needle lenght", Dashboard.language)
+                text: Translator.translate("Needle length", Dashboard.language)
                 font.bold: true
                 font.pixelSize: 15}
             Grid {
@@ -1359,7 +1667,11 @@ Rectangle{
     Rectangle{
         color: "darkgrey"
         width:popupmenu.width
-        height: 480
+        height: 540
+        MouseArea {
+            anchors.fill: parent
+            drag.target: parent
+        }
         Grid {
             rows: 7
             rowSpacing :5

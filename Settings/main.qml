@@ -1,13 +1,12 @@
 import QtQuick 2.8
 import QtQuick.Controls 2.1
-import QtMultimedia 5.8
 import Qt.labs.settings 1.0
 import "qrc:/Translator.js" as Translator
 
 Rectangle {
     id: windowbackround
     anchors.fill: parent
-    color: "grey"
+    color: Qt.rgba(0.1, 0.11, 0.15, 1)
     property int test1: 0
     property int connected: 0
     property var gpscom
@@ -50,13 +49,16 @@ Rectangle {
             property alias shiftlightcanbase: shiftlightbaseadresstext.text
             property alias languagecombobox: languageselect.currentIndex
         }
-        SoundEffect {
-            id: warnsound
-            source: "qrc:/Sounds/alarm.wav"
-        }
-
         Connections {
             target: Dashboard
+            ignoreUnknownSignals: true
+            function onWifiStatChanged() {
+                wifistatus.text = Dashboard.WifiStat
+            }
+            function onEthernetStatChanged() {
+                ethernetstatus.text = Dashboard.EthernetStat
+            }
+
             function onOdoChanged() {
                 odometer.text = (Dashboard.Odo).toFixed(3)
             }
@@ -75,6 +77,11 @@ Rectangle {
             }
             function onKnockChanged() {
                 if (Dashboard.Knock > Dashboard.knockwarn) {
+                    playwarning.start()
+                }
+            }
+            function onBoostPresChanged() {
+                if (Dashboard.BoostPres > Dashboard.boostwarn) {
                     playwarning.start()
                 }
             }
@@ -1134,8 +1141,8 @@ Rectangle {
         //Function to play warning sound
         id: playwarning
         function start() {
-            if (warnsound.playing == false)
-                warnsound.play()
+            // Intentionally no-op in VM/headless-friendly builds.
+            // Existing warning visual indicators still function.
         }
     }
 

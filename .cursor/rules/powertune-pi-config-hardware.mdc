@@ -1,0 +1,18 @@
+---
+description: Raspberry Pi boot config.txt overlays (SPI CAN, UART, audio)
+alwaysApply: false
+globs: "**/config.txt,**/fixcan.sh"
+---
+
+# Pi `config.txt` (repo copy) — hardware expectations
+
+## Enabled in tracked `config.txt`
+- **`dtparam=spi=on`** — SPI for MCP2515 and similar.
+- **`dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25`** — MCP2515 on SPI, **16 MHz** crystal, IRQ on **BCM GPIO 25** (not physical pin number).
+- **`dtoverlay=spi-bcm2835-overlay`**, **`dtparam=audio=on`**, **`dtoverlay=disable-bt`** (Pi 4–style BT off for UART use cases), **`enable_uart=1`**, **`gpu_mem=256`**.
+
+## App vs GPIO
+- Qt code generally uses **kernel interfaces** (`can0`, serial ports, backlight sysfs), not direct GPIO bit-bang; pin usage follows **device tree / overlays** on the SD card image (Bookworm may use **`/boot/firmware/config.txt`** on device).
+
+## `fixcan.sh` note
+- Script references **alternate MCP2515 line / IRQ 24** — deployment-specific; compare to active **`config.txt`** on the Pi.

@@ -25,30 +25,34 @@ Quick1.TabView {
         }
         function onLanguageChanged() {
             setregtabtitle()
-        }
+         }
     }
 
     style: TabViewStyle {
         frameOverlap: 1
         tab: Rectangle {
             id: tabrect
-            color: styleData.selected ? "grey" : "lightgrey"
-            border.color: "steelblue"
-            implicitWidth: tabView.width /11//Math.max(text.width + 4, 80)
-            implicitHeight: tabView.height /11
-            radius: 2
+            color: styleData.selected ? Qt.rgba(0.2, 0.22, 0.3, 1) : Qt.rgba(0.14, 0.16, 0.2, 1)
+            border.color: Qt.rgba(0.35, 0.6, 0.88, 0.45)
+            border.width: 1
+            implicitWidth: tabView.width / 11
+            implicitHeight: tabView.height / 9
+            radius: 4
             Text {
                 id: text
-                width: parent.width - 10 // Adjust the width to provide some padding
-                wrapMode: Text.Wrap // Enable text wrapping
+                width: parent.width - 10
+                wrapMode: Text.Wrap
                 anchors.centerIn: parent
-                font.pixelSize: tabView.width / 55
+                font.pixelSize: tabView.width / 45
+                font.bold: styleData.selected
                 text: styleData.title
-                color: styleData.selected ? "white" : "black"
+                color: styleData.selected ? "white" : Qt.rgba(0.85, 0.88, 0.92, 1)
             }
         }
         frame: Rectangle {
-            color: "steelblue"
+            color: Qt.rgba(0.08, 0.09, 0.12, 1)
+            border.color: Qt.rgba(0.25, 0.5, 0.75, 0.35)
+            border.width: 1
         }
     }
 

@@ -1,0 +1,18 @@
+---
+description: ECU/CAN data into Dashboard (UDP daemons, SocketCAN Extender)
+alwaysApply: false
+globs: "**/udpreceiver.cpp,**/Extender.cpp,**/connect.cpp,**/dashboard.{h,cpp}"
+---
+
+# CAN / ECU data → UI
+
+## UDP path (typical daemon → gauges)
+- **`udpreceiver`:** binds **UDP port 45454**; each datagram treated as text **`"<id>,<value>"`** (comma-separated).
+- **`processPendingDatagrams()`:** `switch(ident)` → **`m_dashboard->set…(Value)`** (rpm, speed, etc.).
+- **`Connect::openConnection`:** for CAN ECU mode starts **`m_udpreceiver->startreceiver()`**; daemons are selected elsewhere (`daemonstartup`, `startdaemon.sh`).
+
+## SocketCAN path (`Extender`)
+- **`Extender::openCAN`:** creates **`socketcan`** device **`can0`**; **`framesReceived` → `readyToRead()`** reads **`QCanBusFrame`**, updates **`m_dashboard`** (including **`setcan(QStringList)`** for raw id + hex payload).
+
+## QML consumption
+- **`Connect`** registers **`Dashboard`** on the QML engine; gauges use **`Dashboard.<property>`** or dynamic **`Dashboard[sourcename]`** (e.g. `createsquaregaugeUserDash.js`).

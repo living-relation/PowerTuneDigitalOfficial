@@ -1,5 +1,5 @@
 // Translations.js
-.pragma library
+//.pragma library
 
 var translations = {
     "en_US": {

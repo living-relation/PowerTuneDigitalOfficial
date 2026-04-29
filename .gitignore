@@ -6,3 +6,6 @@ appsettings.cpp.autosave
 *.autosave
 
 .idea/
+
+# Local build output (qmake in /build)
+build/
