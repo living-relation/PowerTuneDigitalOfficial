@@ -41,6 +41,7 @@ QGeoPath ioMapData::loadMapData(QString country, QString trackName) {
         }
         inputFile.close();
     }
+    return QGeoPath();
 }
 
 QGeoPath ioMapData::parseKML(QList<QString> list)
@@ -236,6 +237,7 @@ QList<QString> ioMapData::getCenter(QString country, QString trackName)
         inputFile.close();
         return returnList;
     }
+    return returnList;
 }
 
 QList<QString> ioMapData::getStartFinishLine(QString country, QString trackName)
@@ -278,6 +280,7 @@ QList<QString> ioMapData::getStartFinishLine(QString country, QString trackName)
         inputFile.close();
         return floatList;
     }
+    return floatList;
 }
 
 QList<QString> ioMapData::getSecondFinishLine(QString country, QString trackName)
@@ -320,6 +323,7 @@ QList<QString> ioMapData::getSecondFinishLine(QString country, QString trackName
         inputFile.close();
         return floatList;
     }
+    return floatList;
 }
 
 qreal ioMapData::getZOOMLEVEL(QString country, QString trackName)
@@ -353,8 +357,11 @@ qreal ioMapData::getZOOMLEVEL(QString country, QString trackName)
 
         }
         inputFile.close();
-        return spl[0].toFloat();
+        if (!spl.isEmpty()) {
+            return spl[0].toFloat();
+        }
     }
+    return 0.0;
 }
 
 
@@ -389,6 +396,7 @@ bool ioMapData::getExistsSecondFinish(QString country, QString trackName)
         inputFile.close();
         return false;
     }
+    return false;
 }
 
 bool ioMapData::getTrackExists(QString country, QString trackName)
