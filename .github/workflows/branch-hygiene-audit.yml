@@ -1,0 +1,54 @@
+name: Branch hygiene audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      trunk_branch:
+        description: Canonical trunk branch
+        required: false
+        default: main
+      stale_days:
+        description: Stale threshold in days
+        required: false
+        default: "90"
+      run_cleanup:
+        description: Run stale cleanup evaluation (dry-run only)
+        required: false
+        default: "true"
+  schedule:
+    # Mondays at 02:30 UTC to generate branch hygiene snapshots outside peak contributor hours.
+    - cron: "30 2 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run branch hygiene audit
+        env:
+          TRUNK_BRANCH: ${{ github.event.inputs.trunk_branch || 'main' }}
+        run: |
+          bash scripts/branch_hygiene_audit.sh
+
+      - name: Run stale branch cleanup evaluation (dry-run)
+        if: ${{ github.event.inputs.run_cleanup != 'false' }}
+        env:
+          TRUNK_BRANCH: ${{ github.event.inputs.trunk_branch || 'main' }}
+          STALE_DAYS: ${{ github.event.inputs.stale_days || '90' }}
+          DRY_RUN: "true"
+          PRESERVE_ARCHIVE_TAGS: "true"
+        run: |
+          bash scripts/branch_hygiene_cleanup.sh
+
+      - name: Upload branch hygiene artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: branch-hygiene-audit
+          path: artifacts/branch-hygiene/**
