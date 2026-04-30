@@ -122,7 +122,7 @@ Rectangle{
             easing.type: Easing.InOutSine
             from: minvalue
             to: maxvalue
-            duration: 1000
+            duration: 2000
         }
 
         NumberAnimation {
@@ -132,7 +132,7 @@ Rectangle{
             easing.type: Easing.InBack
             from: maxvalue
             to: minvalue
-            duration: 1000
+            duration: 2000
         }
     }
     Connections{
