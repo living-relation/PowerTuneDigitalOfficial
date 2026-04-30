@@ -177,7 +177,7 @@ Button {
             CheckBox {
                 id: obd35
                 visible: false;
-                text: qsTr("Fuel Rail Gauge Pres")
+                text: qsTr("Fuel Rail Gauge Pressure")
                 font.pixelSize: obdselect.width / 55
             }
             CheckBox {
