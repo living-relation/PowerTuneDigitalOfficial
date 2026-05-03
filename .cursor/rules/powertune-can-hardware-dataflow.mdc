@@ -1,0 +1,38 @@
+---
+description: Pi hardware config, CAN hat wiring, ECU/CAN data path into Dashboard and QML
+alwaysApply: false
+globs: "**/config.txt,**/fixcan.sh,**/udpreceiver.{cpp,h},**/Extender.{cpp,h},**/connect.cpp,**/dashboard.{h,cpp},**/main.cpp"
+---
+
+# PowerTune — Pi hardware, CAN wiring & ECU data flow
+
+## `config.txt` (Device Tree, not Qt GPIO)
+
+- **`dtparam=spi=on`** — SPI bus for MCP2515 and similar.
+- **`dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25`** — MCP2515 on SPI, **16 MHz** crystal, IRQ on **BCM GPIO 25** (not physical pin number).
+- **`dtoverlay=spi-bcm2835-overlay`**, **`dtparam=audio=on`**, **`dtoverlay=disable-bt`** (Pi 4–style BT off for UART use cases), **`enable_uart=1`**, **`gpu_mem=256`**.
+- Deploy note: Pi OS Bookworm may use **`/boot/firmware/config.txt`** on the SD card.
+- Qt code uses **kernel interfaces** (`can0`, serial ports, backlight sysfs), not direct GPIO bit-bang; pin usage follows **device tree / overlays** on the SD card image.
+
+## CAN hat identity
+
+- `config.txt` implies **MCP2515 + 16 MHz + IRQ GPIO 25** class wiring.
+- `fixcan.sh` references an **alternate MCP2515 line / IRQ 24** — deployment-specific; compare to active `config.txt` on the target Pi.
+
+## UDP path (daemon → gauges)
+
+- **`udpreceiver`:** binds **UDP port 45454**; each datagram treated as text **`"<id>,<value>"`** (comma-separated).
+- **`processPendingDatagrams()`:** `switch(ident)` → **`m_dashboard->set…(Value)`** (rpm, speed, etc.).
+- **`Connect::openConnection`:** for CAN ECU mode starts **`m_udpreceiver->startreceiver()`**; daemons are selected elsewhere (`daemonstartup`, `startdaemon.sh`).
+
+## SocketCAN path (`Extender`)
+
+- **`Extender::openCAN`:** creates **`socketcan`** device **`can0`**; **`framesReceived` → `readyToRead()`** reads **`QCanBusFrame`**, updates **`m_dashboard`** (including **`setcan(QStringList)`** for raw id + hex payload).
+
+## QML consumption
+
+- **`Connect`** registers **`Dashboard`** on the QML engine; gauges use **`Dashboard.<property>`** or dynamic **`Dashboard[sourcename]`** (e.g. `createsquaregaugeUserDash.js`).
+
+## `main.cpp` note
+
+- `Connect` ctor sets `Extender2` to `m_extender`; **`main.cpp`** also sets `Extender2` after `Connect` — verify which instance QML sees if touching startup.

@@ -1,4 +1,7 @@
 
+# Local MCP server config (developer-specific, contains local paths)
+.mcp.json
+
 PowertuneQMLGui.pro.user
 
 appsettings.cpp.autosave

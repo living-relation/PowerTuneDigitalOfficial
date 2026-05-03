@@ -7,14 +7,14 @@
 - Linear policy: no merge commits into trunk
 - PR target policy: only `living-relation/PowerTuneDigitalOfficial` with base branch `main`
 
-## Temporary freeze during reconciliation
+## Branch automation
 
-`/.github/workflows/feature-merge-command.yml` is intentionally frozen by default:
+`/.github/workflows/feature-merge-command.yml` controls feature-branch merge and delete automation:
 
-- `ALLOW_FEATURE_BRANCH_AUTOMATION: "false"`
-- `ALLOW_BRANCH_DELETE: "false"`
+- `ALLOW_FEATURE_BRANCH_AUTOMATION: "true"` — feature-branch merge automation is **enabled**
+- `ALLOW_BRANCH_DELETE: "true"` — branch deletion after merge is **enabled**
 
-This prevents branch-deleting automation and feature-branch merge automation while branch cleanup and recovery work is in progress.
+Set either value to `"false"` in the workflow file to freeze the corresponding automation during branch cleanup or recovery work.
 
 ## Inventory and recovery workflow
 
