@@ -153,6 +153,7 @@ var translations = {
            "Datasource": { en: "Datasource", de: "Datenquelle",  jp: "データソース", es: "Fuente de datos", fr: "", ar:"" },
            "Size and ring": { en: "Size and ring", de: "Größe und Ring",  jp: "サイズとリング", es: "Tamaño y anillo", fr: "", ar:"" },
            "Needle": { en: "Needle", de: "Nadel",  jp: "針", es: "Aguja", fr: "", ar:"" },
+           "Needle style": { en: "Needle style", de: "Nadelstil", jp: "針スタイル", es: "Estilo de aguja", fr: "", ar:"" },
            "Needle trail": { en: "Needle trail", de: "Nadel Schweif",  jp: "針跡", es: "Sendero de agujas", fr: "", ar:"" },
            "Labels": { en: "Labels", de: "Beschriftungen",  jp: "ラベル", es: "Etiquetas", fr: "", ar:"" },
            "Major ticks": { en: "Major ticks", de: "Haupt Ticks",  jp: "主尺", es: "Marcos importantes", fr: "", ar:"" },

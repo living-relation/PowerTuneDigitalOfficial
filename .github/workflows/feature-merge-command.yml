@@ -1,5 +1,9 @@
 name: Feature branch merge command
 
+env:
+  ALLOW_FEATURE_BRANCH_AUTOMATION: "false"
+  ALLOW_BRANCH_DELETE: "false"
+
 on:
   issue_comment:
     types:
@@ -113,7 +117,7 @@ jobs:
 
   merge-feature:
     needs: parse-command
-    if: ${{ needs.parse-command.outputs.authorized == 'true' && needs.parse-command.outputs.mode == 'merge' }}
+    if: ${{ env.ALLOW_FEATURE_BRANCH_AUTOMATION == 'true' && needs.parse-command.outputs.authorized == 'true' && needs.parse-command.outputs.mode == 'merge' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -197,6 +201,7 @@ jobs:
           git push origin "HEAD:$TARGET_BRANCH"
 
       - name: Delete requested feature branch
+        if: ${{ env.ALLOW_BRANCH_DELETE == 'true' }}
         env:
           DELETE_BRANCH: ${{ needs.parse-command.outputs.delete_branch }}
         run: |
@@ -235,6 +240,30 @@ jobs:
               "```",
             ].join("\n");
 
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+  merge-feature-disabled:
+    needs: parse-command
+    # parse-command only emits mode=merge for authorized users.
+    if: ${{ env.ALLOW_FEATURE_BRANCH_AUTOMATION != 'true' && needs.parse-command.outputs.mode == 'merge' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment when merge automation is frozen
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = [
+              "⚠️ Feature-branch merge automation is currently frozen.",
+              "",
+              "Repository policy is currently enforcing linear-history cleanup and manual branch reconciliation.",
+              "Automation can be re-enabled by setting `ALLOW_FEATURE_BRANCH_AUTOMATION` to `\"true\"` in this workflow.",
+            ].join("\n");
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,

@@ -1,5 +1,86 @@
 # PowerTune
 
+## Running in this VM (build + interactive UI test)
+
+This repository can be built and run in this VM with Xvfb for GUI testing.
+
+### 1) Install dependencies (Ubuntu/Debian)
+
+```bash
+sudo apt-get update
+sudo apt-get install -y \
+  qtbase5-dev qtdeclarative5-dev qtquickcontrols2-5-dev \
+  qtmultimedia5-dev libqt5serialport5-dev libqt5serialbus5-dev \
+  libqt5charts5-dev qtlocation5-dev qtpositioning5-dev \
+  libqt5positioning5 libqt5sensors5-dev qtchooser \
+  qml-module-qtquick-controls qml-module-qtquick-controls2 \
+  qml-module-qtquick-dialogs qml-module-qtquick-window2 \
+  qml-module-qtquick-layouts qml-module-qtquick-extras \
+  qml-module-qtgraphicaleffects qml-module-qt-labs-settings \
+  qml-module-qtpositioning qml-module-qtlocation \
+  qml-module-qtmultimedia qml-module-qtsensors \
+  qtvirtualkeyboard-plugin xvfb xdotool ffmpeg
+```
+
+### 2) Build
+
+```bash
+cd /workspace
+qmake PowertuneQMLGui.pro
+make -j4
+```
+
+### 3) Run with visible UI in the VM desktop
+
+If your VM session has a display:
+
+```bash
+cd /workspace
+./PowertuneQMLGui
+```
+
+### 4) Run headless with Xvfb (for CI/simulation)
+
+```bash
+cd /workspace
+xvfb-run -a ./PowertuneQMLGui
+```
+
+### 5) Record a demo video while running headless
+
+```bash
+cd /workspace
+xvfb-run -a bash -lc '
+  ./PowertuneQMLGui > /tmp/powertune.log 2>&1 &
+  APP_PID=$!
+  sleep 2
+  ffmpeg -y -video_size 1280x720 -framerate 20 -f x11grab -i "$DISPLAY" \
+    -t 20 -pix_fmt yuv420p /tmp/powertune-demo.mp4
+  kill $APP_PID || true
+  wait $APP_PID 2>/dev/null || true
+'
+```
+
+### 6) Manual UI walkthrough to test functionality
+
+1. App opens to intro page (`IntroFast.qml` by default on this branch).
+2. Swipe between dashboards in `SwipeView`.
+3. Open last page to access `SerialSettings` tab view.
+4. Go to **Dash Sel.** tab and set active dashboards (1-4), select Userdash slots.
+5. Navigate to a Userdash page and double-tap background to show edit controls.
+6. Add or edit a round gauge:
+   - Open gauge context menu.
+   - Test **Gauge style** values including new styles 5-7.
+   - Open **Needle** menu and test **Needle style** options (canvas + SVG styles).
+7. Save dashboard and export `.txt`; verify legacy files still import.
+
+### 7) Notes about this VM
+
+- Deprecated `Connections` syntax warnings were fixed in key startup files.
+- Brightness signal typo in `main.qml` was corrected (`onBrightnessChanged`).
+- Warning sound playback is currently a no-op in `Settings/main.qml` for headless-friendly runs.
+- This VM can run a functional GUI app via Xvfb, but hardware-dependent features (real ECU/CAN, Raspberry Pi backlight, audio server, GPS devices) require real hardware or mocked services.
+
 #### Changelog :
 * 1.97u 
 

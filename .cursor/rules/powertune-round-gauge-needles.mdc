@@ -12,13 +12,14 @@ alwaysApply: false
 
 ## `.txt` / `createRoundGauge` schema
 
-- **Round gauge** rows are **fixed-order CSV**; import calls **`CreateRoundgaugeScript.createRoundGauge(dashvalue.textAt(1)…textAt(67))`** in `Userdash1.qml` (mirror in 2/3). The last column, `textAt(67)`, is `gaugeStyleIndex`.
+- **Round gauge** rows are **fixed-order CSV**; import calls **`CreateRoundgaugeScript.createRoundGauge(dashvalue.textAt(1)…)`** in `Userdash1.qml` (mirror in 2/3). Columns `textAt(67)` = `gaugeStyleIndex`, **`textAt(68)`** = `needleStyleIndex`, **`textAt(69)`** = `needleImageSource` (append-only; older files default 0 and `""`).
 - **`saveDashtofile()`** appends the same fields for `"Round gauge"`; **`createDash()`** replays **`gaugelist`** into `createRoundGauge`.
-- Current trailing fields: `…peakneedleoffset, peakneedlevisible, gaugeStyleIndex`.
+- Trailing fields: `…peakneedleoffset, peakneedlevisible, gaugeStyleIndex, needleStyleIndex, needleImageSource`.
 
 ## Gauge style presets
 
-- **`gaugeStyleIndex`** (int, default `0`) selects a visual preset layered on top of the base renderer without altering tickmark/label/needle geometry. `0 Classic` is the legacy look; `1 Carbon`, `2 Neon Glow`, `3 Racing Digital`, `4 Modern Flat` add background + ring overlays painted via `styleBackgroundCanvas` and `styleOverlayCanvas` in `RoundGauge.qml`.
+- **`gaugeStyleIndex`** (int, default `0`) selects a visual preset layered on top of the base renderer without altering tickmark/label/needle geometry. `0 Classic` is the legacy look; `1`–`4` and **`5 Aurora`**, **`6 Stealth`**, **`7 Pro`** add background + ring overlays in `RoundGauge.qml`.
+- **`needleStyleIndex`** / **`needleImageSource`**: row in `NeedleStyleList.qml` and qrc path; empty path = canvas needle.
 - When a style needs a value-driven repaint, subscribe the new Canvas to `onGaugeStyleIndexChanged: requestPaint()` in the same style as the existing `redcanvas` / `needletrail`.
 
 ## Extending (e.g. PNG/SVG needle) without breaking old `.txt`

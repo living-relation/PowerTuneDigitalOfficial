@@ -30,7 +30,7 @@ Item {
     DatasourcesList{id: powertunedatasource}
     Connections{
         target: Dashboard
-        onDraggableChanged: togglemousearea();
+        function onDraggableChanged() { togglemousearea(); }
     }
 
     // MouseArea {
@@ -255,9 +255,9 @@ Item {
             }
             ComboBox {
                 id: cbx_sources
-                font.pixelSize: 15
+                font.pixelSize: 18
                 textRole: "titlename"
-                width: 200
+                width: parent.width
                 height: 40
                 model: powertunedatasource
                 currentIndex: 1

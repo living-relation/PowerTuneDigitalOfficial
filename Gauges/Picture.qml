@@ -44,8 +44,7 @@ Item {
         anchors.fill: parent
         drag.target: parent
         enabled: false
-        onPressed:
-        {
+        onPressed: {
             touchCounter++;
             if (touchCounter == 1) {
                 lastTouchTime = Date.now();
@@ -60,9 +59,6 @@ Item {
                 changesize.visible = true;
                 Connect.readavailablebackrounds();
             }
-        }
-        Component.onCompleted: {toggledecimal();
-            toggledecimal2();
         }
     }
     Timer {

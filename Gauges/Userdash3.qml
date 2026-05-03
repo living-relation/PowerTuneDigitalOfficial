@@ -968,7 +968,8 @@ Item {
                                          userDash.children[i].peakneedletipwidth+","+
                                          userDash.children[i].peakneedleoffset+","+
                                          userDash.children[i].peakneedlevisible+","+
-                                         userDash.children[i].gaugeStyleIndex+"\r\n");
+                                         userDash.children[i].gaugeStyleIndex+","+
+                                         userDash.children[i].ringcolor+"\r\n");
             }
             if (userDash.children[i].information === "State gauge")
             {
@@ -1073,7 +1074,8 @@ Item {
                                                         gaugelist.get(i).peakneedletipwidth,
                                                         gaugelist.get(i).peakneedleoffset,
                                                         gaugelist.get(i).peakneedlevisible,
-                                                        gaugelist.get(i).gaugeStyleIndex
+                                                        gaugelist.get(i).gaugeStyleIndex,
+                                                        gaugelist.get(i).ringcolor
                                                         );
                 break;
             }
@@ -1262,7 +1264,8 @@ Item {
                                      "peakneedletipwidth":userDash.children[i].peakneedletipwidth,
                                      "peakneedleoffset":userDash.children[i].peakneedleoffset,
                                      "peakneedlevisible":userDash.children[i].peakneedlevisible,
-                                     "gaugeStyleIndex":userDash.children[i].gaugeStyleIndex
+                                     "gaugeStyleIndex":userDash.children[i].gaugeStyleIndex,
+                                     "ringcolor":userDash.children[i].ringcolor
                                  })
             }
 
