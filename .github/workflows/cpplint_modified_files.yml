@@ -29,16 +29,17 @@ jobs:
       - run: npm install fs
       - name: Check file existence
         id: check_files
+        if: always()
         uses: andstor/file-existence-action@v1
         with:
           files: "cpplint.txt"
       - uses: actions/github-script@v6
-        if: steps.check_files.outputs.files_exists == 'true'
+        if: always() && steps.check_files.outputs.files_exists == 'true'
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             const fs = require('fs')
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
