@@ -7,6 +7,9 @@
 
 name: cpplint_modified_files
 on: [pull_request]
+permissions:
+  contents: read
+  pull-requests: write
 jobs:
   cpplint_modified_files:
     runs-on: ubuntu-latest
