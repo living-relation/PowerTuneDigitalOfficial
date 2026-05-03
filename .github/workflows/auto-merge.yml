@@ -1,0 +1,123 @@
+# Automatically merges pull requests from trusted authors once:
+#   - all CI workflow runs for the PR's head SHA have completed successfully, and
+#   - the PR has at least one APPROVE review.
+#
+# Triggered whenever any workflow run completes so it re-evaluates promptly.
+# Also triggered when a PR review is submitted (catches the case where CI
+# already passed before the approval arrived).
+
+name: Auto merge
+
+on:
+  workflow_run:
+    workflows:
+      - 'Test build'
+      - 'cpplint_modified_files'
+      - 'Lint'
+      - 'PR target policy'
+      - 'Auto approve'
+    types: [completed]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Merge approved PR when CI is green
+    runs-on: ubuntu-latest
+    steps:
+      - name: Attempt merge
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const trustedActors = new Set([
+              'living-relation',
+              'Copilot',
+              'copilot-swe-agent[bot]',
+            ]);
+
+            const owner = context.repo.owner;
+            const repo  = context.repo.repo;
+
+            // Resolve the head SHA and PR number depending on the trigger.
+            let headSha, prNumber;
+
+            if (context.eventName === 'workflow_run') {
+              headSha   = context.payload.workflow_run.head_sha;
+              const headBranch = context.payload.workflow_run.head_branch;
+
+              // Find the open PR whose head SHA matches.
+              const { data: prs } = await github.rest.pulls.list({
+                owner, repo,
+                state: 'open',
+                head: `${owner}:${headBranch}`,
+                per_page: 10,
+              });
+              const pr = prs.find(p => p.head.sha === headSha);
+              if (!pr) {
+                core.info('No open PR found for this workflow run; skipping.');
+                return;
+              }
+              prNumber = pr.number;
+            } else {
+              // pull_request_review event
+              prNumber = context.payload.pull_request.number;
+              headSha  = context.payload.pull_request.head.sha;
+            }
+
+            // Fetch full PR details.
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+
+            // Only merge PRs from trusted authors.
+            if (!trustedActors.has(pr.user.login)) {
+              core.info(`PR author "${pr.user.login}" is not trusted; skipping.`);
+              return;
+            }
+
+            // Skip draft PRs.
+            if (pr.draft) {
+              core.info('PR is still in draft; skipping.');
+              return;
+            }
+
+            // Check that PR is approved.
+            const { data: reviews } = await github.rest.pulls.listReviews({ owner, repo, pull_number: prNumber });
+            const approved = reviews.some(r => r.state === 'APPROVED');
+            if (!approved) {
+              core.info('PR has no APPROVE review yet; skipping.');
+              return;
+            }
+
+            // Check that every workflow run for this SHA has completed successfully.
+            const { data: runsPage } = await github.rest.actions.listWorkflowRunsForRepo({
+              owner, repo,
+              head_sha: headSha,
+              per_page: 100,
+            });
+            const blocking = runsPage.workflow_runs.filter(r => {
+              if (r.status !== 'completed') return true;
+              const ok = ['success', 'skipped', 'neutral'].includes(r.conclusion);
+              return !ok;
+            });
+            if (blocking.length > 0) {
+              core.info('Not all checks are green yet:');
+              for (const r of blocking) core.info(`  ${r.name}: ${r.status}/${r.conclusion}`);
+              return;
+            }
+
+            // Everything looks good — merge via rebase.
+            try {
+              await github.rest.pulls.merge({
+                owner,
+                repo,
+                pull_number: prNumber,
+                merge_method: 'rebase',
+              });
+              core.info(`Merged PR #${prNumber} via rebase.`);
+            } catch (e) {
+              core.warning(`Could not merge PR #${prNumber}: ${e.message}`);
+            }
