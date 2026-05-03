@@ -1,8 +1,8 @@
 name: Feature branch merge command
 
 env:
-  ALLOW_FEATURE_BRANCH_AUTOMATION: "false"
-  ALLOW_BRANCH_DELETE: "false"
+  ALLOW_FEATURE_BRANCH_AUTOMATION: "true"
+  ALLOW_BRANCH_DELETE: "true"
 
 on:
   issue_comment:
