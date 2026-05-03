@@ -59,16 +59,8 @@ with open("cpplint.txt", "w", encoding="utf-8") as out_file:
     if result.stdout:
         out_file.write(result.stdout)
 
-# Persist cpplint's return code for later workflow steps and exit successfully
-# so they can still publish cpplint.txt back to the PR.
-with open("cpplint_status.txt", "w", encoding="utf-8") as status_file:
-    status_file.write(f"{result.returncode}\n")
-
-if result.returncode != 0:
-    print(
-        "cpplint reported lint errors; see cpplint.txt for details. "
-        "The return code was written to cpplint_status.txt for later workflow handling.",
-        file=sys.stderr,
-    )
-
-sys.exit(0)
+# Exit with cpplint's return code so the workflow fails when lint errors exist.
+# The downstream "Check file existence" and "github-script" steps use
+# `if: always()` in the workflow YAML so cpplint.txt is still posted to the PR
+# even when this step exits non-zero.
+sys.exit(result.returncode)
