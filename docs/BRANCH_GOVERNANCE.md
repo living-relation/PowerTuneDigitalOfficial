@@ -7,14 +7,50 @@
 - Linear policy: no merge commits into trunk
 - PR target policy: only `living-relation/PowerTuneDigitalOfficial` with base branch `main`
 
-## Temporary freeze during reconciliation
+## `/ship` — single-word automation command
 
-`/.github/workflows/feature-merge-command.yml` is intentionally frozen by default:
+The `/ship` command automates the full merge-to-main lifecycle from a PR comment.
 
-- `ALLOW_FEATURE_BRANCH_AUTOMATION: "false"`
-- `ALLOW_BRANCH_DELETE: "false"`
+### How to trigger
 
-This prevents branch-deleting automation and feature-branch merge automation while branch cleanup and recovery work is in progress.
+1. Open (or find) the pull request you want to merge into `main`.
+2. Post a comment with **exactly** `/ship`.
+3. The workflow scans branch-protection rules, required status checks, repo settings, and current CI status, then posts a report.
+4. After reviewing the report, post **`/ship confirm`** to execute the merge.
+
+### What the workflow does
+
+**`/ship` (Phase 1 — scan)**
+- Verifies the commenter has write/maintain/admin permission.
+- Reads branch-protection rules on the target branch (required reviews, required status checks, admin enforcement, push restrictions, conversation resolution).
+- Reads repository merge settings (allowed merge methods, auto-delete-on-merge).
+- Reads the current PR state (draft, merge conflicts, mergeable state).
+- Reads the latest CI check results for the PR head commit.
+- Posts a full report listing any blockers and informational notices.
+- Asks you to reply `/ship confirm` to proceed.
+
+**`/ship confirm` (Phase 2 — execute)**
+- Converts the PR from draft to ready-for-review if needed.
+- Enables GitHub's native **auto-merge** (rebase method preferred; falls back to squash, then merge commit).
+- Once all required checks pass the PR merges automatically.
+- If auto-merge is unavailable, attempts a direct rebase merge.
+- Branch deletion is handled automatically by the `delete-merged-branches` workflow on merge.
+
+### Caller requirements
+
+- Must be posted as a comment on a **pull request** (not a plain issue).
+- Caller must have **write**, **maintain**, or **admin** permission on the repository.
+
+### Copying to other repos
+
+To enable `/ship` in another `living-relation` repository, copy `.github/workflows/ship.yml` to that repository. No additional secrets are required — it uses the standard `GITHUB_TOKEN`.
+
+## Automation flags — feature-merge-command.yml
+
+`/.github/workflows/feature-merge-command.yml` governs feature-to-feature branch merges:
+
+- `ALLOW_FEATURE_BRANCH_AUTOMATION: "true"` — automation enabled
+- `ALLOW_BRANCH_DELETE: "true"` — branch deletion enabled
 
 ## Inventory and recovery workflow
 

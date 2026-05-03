@@ -1,0 +1,316 @@
+name: Ship to main
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Single-word automation command that merges any feature branch into main.
+#
+#   /ship          → Phase 1: scan branch protections, CI status, repo settings
+#                    and post a report.  Waits for user confirmation.
+#   /ship confirm  → Phase 2: un-draft the PR (if needed), enable auto-merge
+#                    (rebase), and report the outcome.
+#
+# Both commands must be posted as a comment on the PR you want to ship.
+# The caller must have write, maintain, or admin permission on the repository.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  checks: read
+
+jobs:
+  # ───────────────────────────────────────────────────────────────────────────
+  # Step 0 – parse the comment and decide what to do
+  # ───────────────────────────────────────────────────────────────────────────
+  parse:
+    runs-on: ubuntu-latest
+    outputs:
+      phase:       ${{ steps.parse.outputs.phase }}
+      authorized:  ${{ steps.parse.outputs.authorized }}
+      pr_number:   ${{ steps.parse.outputs.pr_number }}
+      head_branch: ${{ steps.parse.outputs.head_branch }}
+      base_branch: ${{ steps.parse.outputs.base_branch }}
+      head_sha:    ${{ steps.parse.outputs.head_sha }}
+    steps:
+      - name: Parse /ship command
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = (context.payload.comment?.body || "").trim();
+
+            // Only react to /ship or /ship confirm
+            if (body !== '/ship' && body !== '/ship confirm') {
+              core.setOutput("phase", "none");
+              return;
+            }
+
+            // Authorization check
+            const username = context.actor;
+            const { data: perm } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              username,
+            });
+            const allowed = new Set(["admin", "maintain", "write"]);
+            const isAuthorized = allowed.has(perm.permission);
+            core.setOutput("authorized", isAuthorized ? "true" : "false");
+
+            if (!isAuthorized) {
+              core.setOutput("phase", "none");
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: context.issue.number,
+                body: `⛔ @${username} — you need **write**, **maintain**, or **admin** permission to use \`/ship\`.`,
+              });
+              return;
+            }
+
+            // Verify the comment is on a pull request
+            let pr;
+            try {
+              const { data } = await github.rest.pulls.get({
+                owner:       context.repo.owner,
+                repo:        context.repo.repo,
+                pull_number: context.issue.number,
+              });
+              pr = data;
+            } catch (_) {
+              core.setOutput("phase", "none");
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: context.issue.number,
+                body: `⚠️ \`/ship\` must be used on a **pull request**, not a plain issue.`,
+              });
+              return;
+            }
+
+            core.setOutput("pr_number",   context.issue.number.toString());
+            core.setOutput("head_branch", pr.head.ref);
+            core.setOutput("base_branch", pr.base.ref);
+            core.setOutput("head_sha",    pr.head.sha);
+            core.setOutput("phase",       body === '/ship' ? "scan" : "execute");
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Step 1 – scan: report blockers and ask for confirmation
+  # ───────────────────────────────────────────────────────────────────────────
+  scan:
+    needs: parse
+    if: needs.parse.outputs.phase == 'scan' && needs.parse.outputs.authorized == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan protections, CI status and post report
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER:   ${{ needs.parse.outputs.pr_number }}
+          HEAD_BRANCH: ${{ needs.parse.outputs.head_branch }}
+          BASE_BRANCH: ${{ needs.parse.outputs.base_branch }}
+          HEAD_SHA:    ${{ needs.parse.outputs.head_sha }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner      = context.repo.owner;
+            const repo       = context.repo.repo;
+            const baseBranch = process.env.BASE_BRANCH;
+            const headBranch = process.env.HEAD_BRANCH;
+            const prNumber   = parseInt(process.env.PR_NUMBER, 10);
+            const headSha    = process.env.HEAD_SHA;
+
+            const blockers = [];
+            const notices  = [];
+
+            // ── Branch protection ────────────────────────────────────────────
+            let prot = null;
+            try {
+              const { data } = await github.rest.repos.getBranchProtection({
+                owner, repo, branch: baseBranch,
+              });
+              prot = data;
+            } catch (e) {
+              if (e.status === 404) {
+                notices.push(`ℹ️ No branch protection rules are configured for \`${baseBranch}\`.`);
+              } else {
+                blockers.push(`⚠️ Could not read branch protection for \`${baseBranch}\`: ${e.message}`);
+              }
+            }
+
+            if (prot) {
+              const rpr = prot.required_pull_request_reviews;
+              if (rpr) {
+                const n = rpr.required_approving_review_count || 0;
+                blockers.push(`🔒 **Required approving reviews**: ${n} — auto-merge will wait until ${n} approval(s) exist`);
+                if (rpr.dismiss_stale_reviews)     blockers.push(`🔒 **Dismiss stale reviews**: enabled`);
+                if (rpr.require_code_owner_reviews) blockers.push(`🔒 **Code-owner reviews required**`);
+              }
+              const rsc = prot.required_status_checks;
+              if (rsc?.contexts?.length)
+                blockers.push(`🔒 **Required status checks**: \`${rsc.contexts.join('`, `')}\``);
+              if (prot.enforce_admins?.enabled)
+                blockers.push(`🔒 **Enforce admins**: on — even admin accounts must satisfy all protection rules`);
+              if (prot.restrictions)
+                blockers.push(`🔒 **Push restrictions**: only specific users/teams can push to \`${baseBranch}\``);
+              if (prot.required_linear_history?.enabled)
+                notices.push(`ℹ️ **Required linear history**: merge commits are disabled — rebase or squash will be used`);
+              if (prot.required_conversation_resolution?.enabled)
+                blockers.push(`🔒 **Conversation resolution required**: all PR threads must be resolved before merging`);
+            }
+
+            // ── Repository settings ──────────────────────────────────────────
+            const { data: repoData } = await github.rest.repos.get({ owner, repo });
+            const methods = [];
+            if (repoData.allow_squash_merge) methods.push('squash');
+            if (repoData.allow_merge_commit) methods.push('merge commit');
+            if (repoData.allow_rebase_merge) methods.push('rebase');
+            notices.push(`ℹ️ **Allowed merge methods**: ${methods.join(', ') || '(none enabled)'}`);
+            if (repoData.delete_branch_on_merge)
+              notices.push(`ℹ️ **Auto-delete merged branches**: enabled in repository settings`);
+
+            // ── PR state ────────────────────────────────────────────────────
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+            if (pr.draft)
+              notices.push(`ℹ️ **PR is a draft** — will be converted to ready-for-review on \`/ship confirm\``);
+            if (pr.mergeable_state === 'dirty')
+              blockers.push(`❌ **Merge conflicts** — the branch must be rebased or conflicts resolved before merging`);
+
+            // ── CI check runs ────────────────────────────────────────────────
+            let checkRuns = [];
+            try {
+              const { data } = await github.rest.checks.listForRef({ owner, repo, ref: headSha, per_page: 100 });
+              checkRuns = data.check_runs;
+            } catch (_) {}
+
+            const failed  = checkRuns.filter(c => ['failure','timed_out','action_required'].includes(c.conclusion));
+            const pending = checkRuns.filter(c => ['in_progress','queued','waiting'].includes(c.status));
+
+            if (failed.length)
+              blockers.push(`❌ **Failed CI checks**: ${failed.map(c => `\`${c.name}\``).join(', ')}`);
+            if (pending.length)
+              notices.push(`⏳ **Pending CI checks**: ${pending.map(c => `\`${c.name}\``).join(', ')}`);
+
+            // ── Build report ─────────────────────────────────────────────────
+            const lines = [
+              `## 🚢 \`/ship\` scan report`,
+              ``,
+              `**PR #${prNumber}** — \`${headBranch}\` → \`${baseBranch}\``,
+              ``,
+            ];
+
+            if (blockers.length) {
+              lines.push(`### ⚠️ Potential blockers`);
+              lines.push(``);
+              blockers.forEach(b => lines.push(`- ${b}`));
+              lines.push(``);
+              lines.push(`> These settings may require manual action or will cause the workflow to wait until they are satisfied.`);
+            } else {
+              lines.push(`### ✅ No blocking settings detected`);
+            }
+
+            if (notices.length) {
+              lines.push(``);
+              lines.push(`### ℹ️ Repository / PR settings`);
+              lines.push(``);
+              notices.forEach(n => lines.push(`- ${n}`));
+            }
+
+            lines.push(``);
+            lines.push(`---`);
+            lines.push(`Reply \`/ship confirm\` to proceed with the merge and branch deletion.`);
+
+            await github.rest.issues.createComment({
+              owner, repo,
+              issue_number: prNumber,
+              body: lines.join('\n'),
+            });
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Step 2 – execute: un-draft, enable auto-merge, report
+  # ───────────────────────────────────────────────────────────────────────────
+  execute:
+    needs: parse
+    if: needs.parse.outputs.phase == 'execute' && needs.parse.outputs.authorized == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Un-draft, enable auto-merge, report
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER:   ${{ needs.parse.outputs.pr_number }}
+          HEAD_BRANCH: ${{ needs.parse.outputs.head_branch }}
+          BASE_BRANCH: ${{ needs.parse.outputs.base_branch }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner      = context.repo.owner;
+            const repo       = context.repo.repo;
+            const prNumber   = parseInt(process.env.PR_NUMBER, 10);
+            const headBranch = process.env.HEAD_BRANCH;
+
+            const log = [];
+
+            // Un-draft if needed
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+            if (pr.draft) {
+              await github.rest.pulls.update({ owner, repo, pull_number: prNumber, draft: false });
+              log.push(`✅ Converted draft PR to ready-for-review`);
+            }
+
+            // Try to enable auto-merge via GraphQL (rebase preferred; falls back to squash then merge)
+            let autoMergeEnabled = false;
+            const mergeMethodsToTry = ['REBASE', 'SQUASH', 'MERGE'];
+            for (const method of mergeMethodsToTry) {
+              try {
+                await github.graphql(`
+                  mutation($prId: ID!, $method: PullRequestMergeMethod!) {
+                    enablePullRequestAutoMerge(input: { pullRequestId: $prId, mergeMethod: $method }) {
+                      pullRequest { autoMergeRequest { mergeMethod } }
+                    }
+                  }
+                `, { prId: pr.node_id, method });
+                log.push(`✅ Auto-merge enabled (${method.toLowerCase()} method) — PR will merge automatically once all required checks pass`);
+                autoMergeEnabled = true;
+                break;
+              } catch (e) {
+                if (method === mergeMethodsToTry[mergeMethodsToTry.length - 1]) {
+                  log.push(`⚠️ Could not enable auto-merge: ${e.message}`);
+                }
+              }
+            }
+
+            // If auto-merge is not available, attempt a direct merge
+            if (!autoMergeEnabled) {
+              try {
+                await github.rest.pulls.merge({
+                  owner, repo,
+                  pull_number:  prNumber,
+                  merge_method: 'rebase',
+                });
+                log.push(`✅ PR merged directly (rebase)`);
+
+                // Delete the branch (also handled by delete-merged-branches.yml)
+                try {
+                  await github.rest.git.deleteRef({ owner, repo, ref: `heads/${headBranch}` });
+                  log.push(`✅ Branch \`${headBranch}\` deleted`);
+                } catch (e2) {
+                  log.push(`⚠️ Branch deletion skipped: ${e2.message}`);
+                }
+              } catch (e) {
+                log.push(`❌ Direct merge failed: ${e.message}`);
+                log.push(`> Please resolve any failing checks or conflicts, then retry \`/ship confirm\`.`);
+              }
+            }
+
+            await github.rest.issues.createComment({
+              owner, repo,
+              issue_number: prNumber,
+              body: [
+                `## 🚢 \`/ship confirm\` results`,
+                ``,
+                ...log,
+              ].join('\n'),
+            });
