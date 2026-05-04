@@ -8,4 +8,4 @@ appsettings.cpp.autosave
 .idea/
 
 # Local build output (qmake in /build)
-build/
+build/__pycache__/

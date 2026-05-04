@@ -26,13 +26,16 @@ jobs:
           cat git_diff.txt
       - name: cpplint_modified_files
         run: python .github/workflows/lint.py
+      - run: npm install fs
+        if: always()
       - name: Check file existence
         id: check_files
+        if: always()
         uses: andstor/file-existence-action@v1
         with:
           files: "cpplint.txt"
       - uses: actions/github-script@v6
-        if: steps.check_files.outputs.files_exists == 'true'
+        if: always() && steps.check_files.outputs.files_exists == 'true'
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
