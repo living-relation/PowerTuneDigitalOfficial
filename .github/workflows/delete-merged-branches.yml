@@ -1,6 +1,8 @@
 name: Delete merged branches
 
 env:
+  # Safety gate: set to "true" to enable branch deletion.
+  # Both jobs check this flag before performing any deletes.
   ALLOW_BRANCH_DELETE: "false"
 
 on:
@@ -56,7 +58,7 @@ jobs:
               return;
             }
 
-            // Create archive tag before deletion so the tip is always recoverable.
+            // Build timestamp string matching branch_hygiene_cleanup.sh format: YYYYMMDDTHHMMSSz
             const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
             const tagName = `archive/deleted-branches/${timestamp}/${branch.replace(/\//g, '-')}`;
             try {
@@ -195,6 +197,7 @@ jobs:
             }
 
             // Shared timestamp so all tags from this run share the same prefix.
+            // Format matches branch_hygiene_cleanup.sh: YYYYMMDDTHHMMSSz
             const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
 
             let deleted = 0;
