@@ -205,6 +205,18 @@ jobs:
         env:
           DELETE_BRANCH: ${{ needs.parse-command.outputs.delete_branch }}
         run: |
+          # Create archive tag before deletion (as per BRANCH_GOVERNANCE.md policy)
+          TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
+          SANITIZED_BRANCH="${DELETE_BRANCH//\//-}"
+          TAG_NAME="archive/deleted-branches/${TIMESTAMP}/${SANITIZED_BRANCH}"
+
+          # Get the branch SHA and create the archive tag
+          BRANCH_SHA="$(git rev-parse "origin/${DELETE_BRANCH}")"
+          git tag -a "$TAG_NAME" "$BRANCH_SHA" -m "Archive of deleted branch '${DELETE_BRANCH}' (feature-merge command)"
+          git push origin "refs/tags/${TAG_NAME}" || echo "Warning: Could not push archive tag ${TAG_NAME}"
+          echo "Created archive tag: ${TAG_NAME}"
+
+          # Now delete the branch
           git push origin --delete "$DELETE_BRANCH"
 
       - name: Comment with merge results

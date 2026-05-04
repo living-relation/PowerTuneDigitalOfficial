@@ -31,6 +31,42 @@ jobs:
             const repo = context.repo.repo;
 
             try {
+              // Get the branch SHA before deletion for archive tag
+              const { data: ref } = await github.rest.git.getRef({
+                owner,
+                repo,
+                ref: `heads/${branch}`,
+              });
+              const branchSha = ref.object.sha;
+
+              // Create archive tag before deletion (as per BRANCH_GOVERNANCE.md policy)
+              const timestamp = new Date().toISOString().replace(/[:.]/g, '').replace(/-/g, '').slice(0, 15) + 'Z';
+              const sanitizedBranch = branch.replace(/\//g, '-');
+              const tagName = `archive/deleted-branches/${timestamp}/${sanitizedBranch}`;
+
+              try {
+                await github.rest.git.createTag({
+                  owner,
+                  repo,
+                  tag: tagName,
+                  message: `Archive of deleted branch '${branch}' (merged PR #${context.payload.pull_request.number})`,
+                  object: branchSha,
+                  type: 'commit',
+                });
+
+                await github.rest.git.createRef({
+                  owner,
+                  repo,
+                  ref: `refs/tags/${tagName}`,
+                  sha: branchSha,
+                });
+
+                core.info(`Created archive tag: ${tagName}`);
+              } catch (tagError) {
+                core.warning(`Could not create archive tag ${tagName}: ${tagError.message}`);
+              }
+
+              // Now delete the branch
               await github.rest.git.deleteRef({
                 owner,
                 repo,
@@ -132,8 +168,45 @@ jobs:
 
             let deleted = 0;
             let failed = 0;
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '').replace(/-/g, '').slice(0, 15) + 'Z';
+
             for (const branch of toDelete) {
               try {
+                // Get the branch SHA before deletion for archive tag
+                const { data: ref } = await github.rest.git.getRef({
+                  owner,
+                  repo,
+                  ref: `heads/${branch}`,
+                });
+                const branchSha = ref.object.sha;
+
+                // Create archive tag before deletion (as per BRANCH_GOVERNANCE.md policy)
+                const sanitizedBranch = branch.replace(/\//g, '-');
+                const tagName = `archive/deleted-branches/${timestamp}/${sanitizedBranch}`;
+
+                try {
+                  await github.rest.git.createTag({
+                    owner,
+                    repo,
+                    tag: tagName,
+                    message: `Archive of deleted branch '${branch}' (bulk cleanup)`,
+                    object: branchSha,
+                    type: 'commit',
+                  });
+
+                  await github.rest.git.createRef({
+                    owner,
+                    repo,
+                    ref: `refs/tags/${tagName}`,
+                    sha: branchSha,
+                  });
+
+                  core.info(`Created archive tag: ${tagName}`);
+                } catch (tagError) {
+                  core.warning(`Could not create archive tag ${tagName}: ${tagError.message}`);
+                }
+
+                // Now delete the branch
                 await github.rest.git.deleteRef({
                   owner,
                   repo,
