@@ -1,8 +1,6 @@
 # GitHub Action that enables a repo to achieve gradual compliance with cpplint by
-#     linting only those files that have been added or modified (vs. origin/master).
-# 1. runs cpplint only on those files that have been modified vs. origin/master.
-# 2. compiles with g++ only those files that have been modified vs. origin/master.
-# 3. other optional filepath verifications may be commented out at the end of this file.
+#     linting only those files that have been added or modified (vs. origin/main).
+# 1. runs cpplint only on those files that have been modified vs. origin/main.
 # From: https://github.com/cpplint/GitHub-Action-for-cpplint
 
 name: cpplint_modified_files
@@ -14,16 +12,18 @@ jobs:
   cpplint_modified_files:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-      - shell: python  # Show the version of shell: python and then upgrade shell: python to Python 3.8
-        run: import sys ; print("Python {}.{}.{}".format(*sys.version_info))  # Legacy Python :-(
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
       - run: python -m pip install cpplint
-      - run: git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-      - run: git remote update
-      - run: git branch -r
-      - run: git branch -a
-      - run: git diff $CI_REF_SLUG origin/main --name-only > git_diff.txt
+      - name: Compute modified files
+        run: |
+          git diff --name-only origin/${{ github.base_ref }}...${{ github.sha }} > git_diff.txt
+          echo "Modified files ($(wc -l < git_diff.txt)):"
+          cat git_diff.txt
       - name: cpplint_modified_files
         run: python .github/workflows/lint.py
       - run: npm install fs
@@ -45,5 +45,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: fs.readFileSync('cpplint.txt', 'utf8')
-            })        
+            })
         
