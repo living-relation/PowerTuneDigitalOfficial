@@ -1,8 +1,7 @@
 name: Delete merged branches
 
 env:
-  # Safety gate: set to "true" to enable branch deletion.
-  # Both jobs check this flag before performing any deletes.
+  # Set to "true" to enable branch deletion.
   ALLOW_BRANCH_DELETE: "false"
 
 on:
@@ -39,15 +38,12 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            // Skip fork PRs — head.repo is the contributor's fork, not this repo.
-            // Deleting heads/${branch} here would silently remove a same-named branch
-            // in the base repo instead of the fork branch.
+            // Skip fork PRs.
             if (pr.head.repo && pr.head.repo.full_name !== `${owner}/${repo}`) {
               core.info(`Skipping fork PR branch: ${branch} (from ${pr.head.repo.full_name})`);
               return;
             }
 
-            // Protected-branch rules — same set used by the manual cleanup job.
             const protectedPatterns = [
               /^main$/, /^master$/, /^develop$/,
               /^release\//, /^hotfix\//, /^support\//,
@@ -58,7 +54,6 @@ jobs:
               return;
             }
 
-            // Build timestamp string matching branch_hygiene_cleanup.sh format: YYYYMMDDTHHMMSSz
             const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
             const tagName = `archive/deleted-branches/${timestamp}/${branch.replace(/\//g, '-')}`;
             try {
@@ -152,7 +147,6 @@ jobs:
                 continue;
               }
 
-              // Check merged via git ancestry (handles regular merges)
               let isMerged = false;
               try {
                 execSync(
@@ -165,7 +159,6 @@ jobs:
                 core.info(`${branch}: not merged via git ancestry, checking PRs...`);
               }
 
-              // Also check via closed PRs (handles squash/rebase merges)
               if (!isMerged) {
                 try {
                   const { data: prs } = await github.rest.pulls.list({
@@ -196,14 +189,11 @@ jobs:
               return;
             }
 
-            // Shared timestamp so all tags from this run share the same prefix.
-            // Format matches branch_hygiene_cleanup.sh: YYYYMMDDTHHMMSSz
             const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
 
             let deleted = 0;
             let failed = 0;
             for (const branch of toDelete) {
-              // Archive the branch tip before deletion so it is always recoverable.
               const tagName = `archive/deleted-branches/${timestamp}/${branch.replace(/\//g, '-')}`;
               try {
                 const { data: ref } = await github.rest.git.getRef({
