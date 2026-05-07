@@ -102,7 +102,7 @@ Rectangle{
     // Keep legacy properties for compatibility with existing saved dashboards.
     // Needle rendering is canvas-only.
     property int needleStyleIndex: 0
-    property string needleImageSource: ""
+    property string needleStyleSource: ""
     property string ringcolor: "white"
 
     Drag.active: true
@@ -226,6 +226,7 @@ Rectangle{
 
                 Canvas {
                     id: needlecanvas
+                    visible: needleStyleSource === ""
                     anchors.fill: parent
                     renderStrategy: Canvas.Threaded
                     property real xCenter: width / 2
@@ -260,6 +261,17 @@ Rectangle{
                         ctx.fillStyle = needlecolor;
                         ctx.fill();
                     }
+                }
+                Image {
+                    id: svgNeedle
+                    visible: needleStyleSource !== ""
+                    source: needleStyleSource
+                    anchors.centerIn: parent
+                    width: parent.width
+                    height: parent.height
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                    antialiasing: true
                 }
             }
 
@@ -647,36 +659,35 @@ Rectangle{
 
         Menu{
             id: popupmenu
-            font.pixelSize: 15
+            font.pixelSize: 18
             z:1000
             MenuItem {
                 text: Translator.translate("Test sweep", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: intro.running = true;
             }
-
-
             MenuItem {
                 text: Translator.translate("Datasource", Dashboard.language)
-                font.pixelSize: 15
-                onClicked: {datasourcemenue.popup(touchArea.mouseX, touchArea.mouseY);//gaugesizesmenue.visible= true;
-                }
+                font.pixelSize: 18
+                onClicked: {datasourcemenue.popup(touchArea.mouseX, touchArea.mouseY);}
             }
+            MenuSeparator {}
             MenuItem {
                 text: Translator.translate("Size and ring", Dashboard.language)
-                font.pixelSize: 15
-                onClicked: {gaugesizesmenue.popup(touchArea.mouseX, touchArea.mouseY);//gaugesizesmenue.visible= true;
+                font.pixelSize: 18
+                onClicked: {gaugesizesmenue.popup(touchArea.mouseX, touchArea.mouseY);
                          for(var i = 0; i < backroundcolorselect.model.count; ++i) if (backroundcolorselect.textAt(i) === backroundcolor)backroundcolorselect.currentIndex = i ;
                 }
             }
             MenuItem {
                 text: Translator.translate("Start Stop values", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: startstopmenu.popup(touchArea.mouseX, touchArea.mouseY);
             }
+            MenuSeparator {}
             MenuItem {
                 text: Translator.translate("Needle", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {needlemenu.popup(touchArea.mouseX, touchArea.mouseY);
                     for(var i = 0; i < needlecolor2select.model.count; ++i) if (needlecolor2select.textAt(i) === needlecolor2)needlecolor2select.currentIndex = i;
                     for(var a = 0; a < needlecolorselect.model.count; ++a) if (needlecolorselect.textAt(a) === needlecolor)needlecolorselect.currentIndex = a ;
@@ -684,58 +695,58 @@ Rectangle{
             }
             MenuItem {
                 text: Translator.translate("Needle trail", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {needletrailmenu.popup(touchArea.mouseX, touchArea.mouseY);
+                for(var a = 0; a < lowerneedlecolortrailselect.model.count; ++a) if (lowerneedlecolortrailselect.textAt(a) === lowerneedlecolortrailsave)lowerneedlecolortrailselect.currentIndex = a ;
                 for(var a = 0; a < lowerneedlecolortrailselect.model.count; ++a) if (lowerneedlecolortrailselect.textAt(a) === lowerneedlecolortrailsave)lowerneedlecolortrailselect.currentIndex = a ;
                 for(var b = 0; b < middleneedlecortrailcolorselect.model.count; ++b) if (middleneedlecortrailcolorselect.textAt(b) === middleneedlecortrailsave)middleneedlecortrailcolorselect.currentIndex = b ;
                 for(var c = 0; c < outerneedlecolortrailcolorselect.model.count; ++c) if (outerneedlecolortrailcolorselect.textAt(c) === outerneedlecolortrailsave)outerneedlecolortrailcolorselect.currentIndex = c;
-}
-
+                }
             }
+            MenuSeparator {}
             MenuItem {
                 text: Translator.translate("Minor ticks", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {minortickmarkmenu.popup(touchArea.mouseX, touchArea.mouseY);
                     for(var a = 0; a < minortickmarkcolorainctiveselect.model.count; ++a) if (minortickmarkcolorainctiveselect.textAt(a) === minortickmarkcolorinactive)minortickmarkcolorainctiveselect.currentIndex = a;
                     for(var i = 0; i < minortickmarkcoloractiveselect.model.count; ++i) if (minortickmarkcoloractiveselect.textAt(i) === minortickmarkcoloractive)minortickmarkcoloractiveselect.currentIndex = i;
                 }
-
             }
             MenuItem {
                 text: Translator.translate("Major ticks", Dashboard.language)
-                font.pixelSize: 15
-                onClicked: {majortickmarkmenu.popup(touchArea.mouseX, touchArea.mouseY);//gaugesizesmenue.visible= true;
+                font.pixelSize: 18
+                onClicked: {majortickmarkmenu.popup(touchArea.mouseX, touchArea.mouseY);
                     for(var i = 0; i < tickmarkcolorinactiveselect.model.count; ++i) if (tickmarkcolorinactiveselect.textAt(i) === majortickmarkcolorinactive)tickmarkcolorinactiveselect.currentIndex = i;
                     for(var a = 0; a < tickmarkcoloractiveselect.model.count; ++a) if (tickmarkcoloractiveselect.textAt(a) === majortickmarkcoloractive)tickmarkcoloractiveselect.currentIndex = a ;
                 }
-
             }
             MenuItem {
                 text: Translator.translate("Labels", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {labelsandticks.popup(touchArea.mouseX, touchArea.mouseY);
                     for(var a = 0; a < labelfontselect.model.count; ++a) if (labelfontselect.textAt(a) === labelfont)labelfontselect.currentIndex = a ;
                     for(var b = 0; b < labelcolor1select.model.count; ++b) if (labelcolor1select.textAt(b) === labelcoloractive)labelcolor1select.currentIndex = b ;
                     for(var c = 0; c < labelcolor2select.model.count; ++c) if (labelcolor2select.textAt(c) === labelcolorinactive)labelcolor2select.currentIndex = c ;
-
                 }
             }
+            MenuSeparator {}
             MenuItem {
                 text: Translator.translate("Warnings", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: warningmenu.popup(touchArea.mouseX, touchArea.mouseY);
             }
             MenuItem {
                 text: Translator.translate("Description text", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {descriptionmenu.popup(touchArea.mouseX, touchArea.mouseY);
                     for(var i = 0; i < desclabelfontselect.model.count; ++i) if (desclabelfontselect.textAt(i) === desclabelfont)desclabelfontselect.currentIndex = i ;
                     for(var j = 0; j < desctextdisplaytextcolorselect.model.count; ++j) if (desctextdisplaytextcolorselect.textAt(j) === desctextdisplaytextcolor)desctextdisplaytextcolorselect.currentIndex = j ;
                 }
             }
+            MenuSeparator {}
             MenuItem {
                 text: Translator.translate("Delete gauge", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: roundGauge.destroy();
             }
             ////////////////////////////
@@ -758,10 +769,11 @@ Rectangle{
 Rectangle{
     id: submenue
     Drag.active: true
+    z: 1001
     MouseArea {
         anchors.fill: parent
         drag.target: parent
-        enabled: false
+        enabled: true
     }
     Menu{
         id : datasourcemenue
@@ -1130,13 +1142,43 @@ Rectangle{
     Rectangle{
         color: "darkgrey"
         width:popupmenu.width
-        height: 540
+        height: 460
         radius: 10
+        clip: true
+
+        Flickable {
+            anchors.fill: parent
+            contentHeight: needleMenuGrid.height
+            flickableDirection: Flickable.VerticalFlick
+            boundsBehavior: Flickable.StopAtBounds
 
         Grid {
-            rows: 27
+            id: needleMenuGrid
+            rows: 29
             leftPadding: 5
             rowSpacing :5
+
+            Text {
+                text: Translator.translate("Needle style", Dashboard.language)
+                font.bold: true
+                font.pixelSize: 15}
+            ComboBox {
+                id: needleStyleSelect
+                width: popupmenu.width /1.07
+                model: NeedleStyleList{}
+                textRole: "name"
+                font.pixelSize: 15
+                currentIndex: needleStyleIndex
+                onCurrentIndexChanged: {
+                    needleStyleIndex = currentIndex
+                    var item = model.get(currentIndex)
+                    if (item.isCanvas) {
+                        needleStyleSource = ""
+                    } else {
+                        needleStyleSource = item.source
+                    }
+                }
+            }
 
             Text {
                 text: Translator.translate("Needle color", Dashboard.language)
@@ -1321,6 +1363,7 @@ Rectangle{
                 onClicked: {needlemenu.visible = false;
                     touchArea.enabled = true;}
             }
+        }
         }
     }
 }
@@ -2008,7 +2051,7 @@ Rectangle{
             ComboBox{
                 id: labelfontselect
                 width: popupmenu.width
-                model: Qt.fontFamilies()
+                model: window.powerTuneFontList
                 visible:true
                 font.pixelSize: 15
                 currentIndex: 1
@@ -2395,7 +2438,7 @@ Menu{
             ComboBox{
                 id: desclabelfontselect
                 width: popupmenu.width
-                model: Qt.fontFamilies()
+                model: window.powerTuneFontList
                 visible:true
                 font.pixelSize: 15
                 currentIndex: 1
@@ -2727,4 +2770,3 @@ Menu{
         }
     }
 }
-
