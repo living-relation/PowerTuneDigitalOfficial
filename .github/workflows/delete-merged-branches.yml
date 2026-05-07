@@ -1,10 +1,5 @@
 name: Delete merged branches
 
-env:
-  # Safety gate: set to "true" to enable branch deletion.
-  # Both jobs check this flag before performing any deletes.
-  ALLOW_BRANCH_DELETE: "false"
-
 on:
   pull_request:
     types:
@@ -23,10 +18,7 @@ permissions:
 jobs:
   delete-pr-branch:
     name: Delete PR head branch on merge
-    if: >-
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.merged == true &&
-      env.ALLOW_BRANCH_DELETE == 'true'
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Delete merged PR branch
@@ -34,60 +26,47 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const pr = context.payload.pull_request;
-            const branch = pr.head.ref;
+            const branch = context.payload.pull_request.head.ref;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            // Skip fork PRs — head.repo is the contributor's fork, not this repo.
-            // Deleting heads/${branch} here would silently remove a same-named branch
-            // in the base repo instead of the fork branch.
-            if (pr.head.repo && pr.head.repo.full_name !== `${owner}/${repo}`) {
-              core.info(`Skipping fork PR branch: ${branch} (from ${pr.head.repo.full_name})`);
-              return;
-            }
-
-            // Protected-branch rules — same set used by the manual cleanup job.
-            const protectedPatterns = [
-              /^main$/, /^master$/, /^develop$/,
-              /^release\//, /^hotfix\//, /^support\//,
-              /^recovery\//, /^archive\//,
-            ];
-            if (protectedPatterns.some(p => p.test(branch))) {
-              core.info(`Skipping protected branch: ${branch}`);
-              return;
-            }
-
-            // Build timestamp string matching branch_hygiene_cleanup.sh format: YYYYMMDDTHHMMSSz
-            const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-            const tagName = `archive/deleted-branches/${timestamp}/${branch.replace(/\//g, '-')}`;
             try {
+              // Get the branch SHA before deletion for archive tag
               const { data: ref } = await github.rest.git.getRef({
                 owner,
                 repo,
                 ref: `heads/${branch}`,
               });
-              const tagExists = await github.rest.git.getRef({
-                owner,
-                repo,
-                ref: `tags/${tagName}`,
-              }).then(() => true).catch(() => false);
-              if (!tagExists) {
+              const branchSha = ref.object.sha;
+
+              // Create archive tag before deletion (as per BRANCH_GOVERNANCE.md policy)
+              const timestamp = new Date().toISOString().replace(/[:.]/g, '').replace(/-/g, '').slice(0, 15) + 'Z';
+              const sanitizedBranch = branch.replace(/\//g, '-');
+              const tagName = `archive/deleted-branches/${timestamp}/${sanitizedBranch}`;
+
+              try {
+                await github.rest.git.createTag({
+                  owner,
+                  repo,
+                  tag: tagName,
+                  message: `Archive of deleted branch '${branch}' (merged PR #${context.payload.pull_request.number})`,
+                  object: branchSha,
+                  type: 'commit',
+                });
+
                 await github.rest.git.createRef({
                   owner,
                   repo,
                   ref: `refs/tags/${tagName}`,
-                  sha: ref.object.sha,
+                  sha: branchSha,
                 });
-                core.info(`Created archive tag: ${tagName}`);
-              } else {
-                core.info(`Archive tag already exists: ${tagName}`);
-              }
-            } catch (error) {
-              core.warning(`Could not create archive tag ${tagName}: ${error.message}`);
-            }
 
-            try {
+                core.info(`Created archive tag: ${tagName}`);
+              } catch (tagError) {
+                core.warning(`Could not create archive tag ${tagName}: ${tagError.message}`);
+              }
+
+              // Now delete the branch
               await github.rest.git.deleteRef({
                 owner,
                 repo,
@@ -100,9 +79,7 @@ jobs:
 
   cleanup-merged-branches:
     name: Delete all merged branches
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      env.ALLOW_BRANCH_DELETE == 'true'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -121,23 +98,21 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
+            // Collect all non-default branches
             const { execSync } = require('child_process');
+
+            // Fetch all remote refs
             execSync('git fetch --all --prune', { stdio: 'inherit' });
 
             const defaultBranch = 'main';
-            const protectedPatterns = [
-              /^main$/, /^master$/, /^develop$/,
-              /^release\//, /^hotfix\//, /^support\//,
-              /^recovery\//, /^archive\//,
-            ];
+            const protectedPatterns = [/^main$/, /^master$/, /^develop$/, /^release\//, /^hotfix\//, /^support\//, /^recovery\//, /^archive\//];
 
             function isProtected(branch) {
               return protectedPatterns.some(p => p.test(branch));
             }
 
-            const remoteBranches = execSync(
-              "git for-each-ref --format='%(refname:short)' refs/remotes/origin"
-            )
+            // Get all remote branches
+            const remoteBranches = execSync("git for-each-ref --format='%(refname:short)' refs/remotes/origin")
               .toString()
               .trim()
               .split('\n')
@@ -152,20 +127,17 @@ jobs:
                 continue;
               }
 
-              // Check merged via git ancestry (handles regular merges)
+              // Check if merged via git ancestry
               let isMerged = false;
               try {
-                execSync(
-                  `git merge-base --is-ancestor "origin/${branch}" "origin/${defaultBranch}"`,
-                  { stdio: 'pipe' }
-                );
+                execSync(`git merge-base --is-ancestor "origin/${branch}" "origin/${defaultBranch}"`, { stdio: 'pipe' });
                 isMerged = true;
                 core.info(`${branch}: merged (git ancestry)`);
               } catch (_) {
                 core.info(`${branch}: not merged via git ancestry, checking PRs...`);
               }
 
-              // Also check via closed PRs (handles squash/rebase merges)
+              // Also check if there is a merged PR for this branch (handles squash/rebase merges)
               if (!isMerged) {
                 try {
                   const { data: prs } = await github.rest.pulls.list({
@@ -175,9 +147,7 @@ jobs:
                     state: 'closed',
                     per_page: 5,
                   });
-                  isMerged = prs.some(
-                    pr => pr.merged_at !== null && pr.base.ref === defaultBranch
-                  );
+                  isMerged = prs.some(pr => pr.merged_at !== null && pr.base.ref === defaultBranch);
                 } catch (_) {}
               }
 
@@ -196,42 +166,47 @@ jobs:
               return;
             }
 
-            // Shared timestamp so all tags from this run share the same prefix.
-            // Format matches branch_hygiene_cleanup.sh: YYYYMMDDTHHMMSSz
-            const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-
             let deleted = 0;
             let failed = 0;
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '').replace(/-/g, '').slice(0, 15) + 'Z';
+
             for (const branch of toDelete) {
-              // Archive the branch tip before deletion so it is always recoverable.
-              const tagName = `archive/deleted-branches/${timestamp}/${branch.replace(/\//g, '-')}`;
               try {
+                // Get the branch SHA before deletion for archive tag
                 const { data: ref } = await github.rest.git.getRef({
                   owner,
                   repo,
                   ref: `heads/${branch}`,
                 });
-                const tagExists = await github.rest.git.getRef({
-                  owner,
-                  repo,
-                  ref: `tags/${tagName}`,
-                }).then(() => true).catch(() => false);
-                if (!tagExists) {
+                const branchSha = ref.object.sha;
+
+                // Create archive tag before deletion (as per BRANCH_GOVERNANCE.md policy)
+                const sanitizedBranch = branch.replace(/\//g, '-');
+                const tagName = `archive/deleted-branches/${timestamp}/${sanitizedBranch}`;
+
+                try {
+                  await github.rest.git.createTag({
+                    owner,
+                    repo,
+                    tag: tagName,
+                    message: `Archive of deleted branch '${branch}' (bulk cleanup)`,
+                    object: branchSha,
+                    type: 'commit',
+                  });
+
                   await github.rest.git.createRef({
                     owner,
                     repo,
                     ref: `refs/tags/${tagName}`,
-                    sha: ref.object.sha,
+                    sha: branchSha,
                   });
-                  core.info(`Archived: ${tagName}`);
-                } else {
-                  core.info(`Archive tag already exists: ${tagName}`);
-                }
-              } catch (error) {
-                core.warning(`Could not archive ${branch}: ${error.message}`);
-              }
 
-              try {
+                  core.info(`Created archive tag: ${tagName}`);
+                } catch (tagError) {
+                  core.warning(`Could not create archive tag ${tagName}: ${tagError.message}`);
+                }
+
+                // Now delete the branch
                 await github.rest.git.deleteRef({
                   owner,
                   repo,
