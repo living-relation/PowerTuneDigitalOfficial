@@ -451,12 +451,13 @@ Rectangle {
             id: popupmenu
             MenuItem {
                 text: Translator.translate("Change gauge size", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: sizemenu.popup(touchArea.mouseX, touchArea.mouseY)
             }
+            MenuSeparator {}
             MenuItem {
                 text: Translator.translate("Text font size", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked:    {
                     cbx_titlefontsize.visible =true;
                     btntitlefontsize.visible =true;
@@ -464,7 +465,7 @@ Rectangle {
             }
             MenuItem {
                 text: Translator.translate("Text font style", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked:    {
                     cbx_titlefontstyle.visible = true;
                     btn_titlefontstyle.visible = true;
@@ -472,7 +473,7 @@ Rectangle {
             }
             MenuItem {
                 text: Translator.translate("Gauge font size", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked:
                 {
                     btngaugefontsize.visible =true;
@@ -481,25 +482,25 @@ Rectangle {
             }
             MenuItem {
                 text: Translator.translate("Gauge font style", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked:    {
                     btn_valuefontstyle.visible = true;
                     cbx_valuefontstyle.visible = true;
                 }
             }
+            MenuSeparator {}
             MenuItem {
                 text: Translator.translate("Change main value", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {
                     hidemenues();
                     cbxMain.visible = true;
                     btnMainSrc.visible = true;
                 }
             }
-
             MenuItem {
                 text: Translator.translate("Change sec value", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {
                     hidemenues();
                     cbxSecondary.visible = true;
@@ -508,7 +509,7 @@ Rectangle {
             }
             MenuItem {
                 text: Translator.translate("Change title", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {
                     hidemenues();
                     titlenameValue.visible = true;
@@ -517,7 +518,7 @@ Rectangle {
             }
             MenuItem {
                 text: Translator.translate("Set decimal", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {
                     hidemenues();
                     cbx_decimalplaces.visible = true;
@@ -527,16 +528,17 @@ Rectangle {
             }
             MenuItem {
                 text: Translator.translate("Set bar gauge max", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {
                     hidemenues();
                     bargaugeMax.visible = true;
                     btnmaxValue.visible = true;
                 }
             }
+            MenuSeparator {}
             MenuItem {
                 text: Translator.translate("Toggle sec value", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {
                     if(secondaryvaluetextfield.visible === true){
                         secondaryvaluetextfield.visible = false;
@@ -548,7 +550,7 @@ Rectangle {
             }
             MenuItem {
                 text: Translator.translate("Toggle vertical bar gauge", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {
                     if(vertgauge.visible === true){
                         vertgauge.visible = false;
@@ -556,14 +558,12 @@ Rectangle {
                     else{
                         vertgauge.visible = true;
                         horizgauge.visible = false;
-
                     }
                 }
             }
-
             MenuItem {
                 text: Translator.translate("Toggle horizontal bar gauge", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {
                     if(horizgauge.visible === true){
                         horizgauge.visible = false;
@@ -574,20 +574,19 @@ Rectangle {
                     }
                 }
             }
-
+            MenuSeparator {}
             MenuItem {
                 text: Translator.translate("Set min warning", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {
                     hidemenues();
                     txtMinValue.visible = true;
                     btnMinValue.visible = true;
                 }
             }
-
             MenuItem {
                 text: Translator.translate("Set max warning", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: {
                     hidemenues();
                     txtMaxValue.visible = true;
@@ -596,9 +595,10 @@ Rectangle {
             }
             MenuItem {
                 text: Translator.translate("Change unit symbol", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: symbolMenu.popup(touchArea.mouseX, touchArea.mouseY)
             }
+            MenuSeparator {}
             // MenuItem{
             //     text: Translator.translate("Scale", Dashboard.language)
             //     font.pixelSize: 15
@@ -615,7 +615,7 @@ Rectangle {
             // }
             MenuItem {
                 text: Translator.translate("remove gauge", Dashboard.language)
-                font.pixelSize: 15
+                font.pixelSize: 18
                 onClicked: gauge.destroy()
             }
         }
@@ -1001,7 +1001,7 @@ Rectangle {
         ComboBox{
             id: cbx_titlefontstyle
             width: btntitlefontsize.width
-            model: Qt.fontFamilies()
+            model: window.powerTuneFontList
             visible:false
             font.pixelSize: 15
             currentIndex: 1
@@ -1038,7 +1038,7 @@ Rectangle {
         ComboBox{
             id: cbx_valuefontstyle
             width: btntitlefontsize.width
-            model: Qt.fontFamilies()
+            model: window.powerTuneFontList
             visible:false
             font.pixelSize: 15
             currentIndex: 1
