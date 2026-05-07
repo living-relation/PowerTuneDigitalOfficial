@@ -19,10 +19,6 @@ ApplicationWindow {
     id:window
     visible: true
 
-    // Shared UI chrome (drawer, settings tabs use matching tones)
-    readonly property color ptSurface: Qt.rgba(0.11, 0.12, 0.16, 0.95)
-    readonly property color ptFrame: Qt.rgba(0.28, 0.55, 0.82, 0.5)
-
     //width: 1600
     //height: 720
     width: Screen.desktopAvailableWidth
@@ -60,9 +56,7 @@ ApplicationWindow {
     Settings{
         id: appSettings
         property alias sampleActionEnabled: popUpLoader.enabled
-        // When true, first SwipeView page uses IntroFast.qml (no file:// logo) for a quicker first paint.
-        // Set to false to use classic Intro.qml (file:///home/pi/Logo/Logo.png on device).
-        property bool useFastIntroSplash: false
+
     }
 
     // Custom font loaders - register all PowerTune fonts
@@ -173,6 +167,13 @@ ApplicationWindow {
 
     }
 
+    Connections{
+            target: Dashboard
+            onBrigtnessChanged: {
+            brightness.value = Dashboard.Brightness
+            }
+    }
+
     Item {
         id: name
         Component.onCompleted: Connect.checkifraspberrypi()
@@ -196,7 +197,8 @@ ApplicationWindow {
         Loader {
             id: firstPageLoader
             //active: SwipeView.isCurrentItem || SwipeView.isPreviousItem || firstPageLoader.source == "qrc:/GPSTracks/Laptimer.qml"
-            source: appSettings.useFastIntroSplash ? "qrc:/IntroFast.qml" : "qrc:/Intro.qml"
+            source: "qrc:/Intro.qml"
+
         }
 
         Loader {
@@ -278,15 +280,13 @@ ApplicationWindow {
         height: 0.5 * window.height
         edge: Qt.TopEdge
         background: Rectangle {
-            color: window.ptSurface
-            radius: 8
-            border.width: 1
-            border.color: window.ptFrame
+            color: "grey"
+            opacity: 0.8
             Rectangle {
                 x: parent.width - 3
                 width: 1
                 height: parent.height
-                color: Qt.rgba(0, 0, 0, 0.25)
+                color: "black"
             }
         }
 
@@ -458,8 +458,7 @@ ApplicationWindow {
                          //anchors.fill: plusBrightness
                          width: plusBrightness.width
                          height: plusBrightness.height
-                         anchors.horizontalCenter: plusBrightness.horizontalCenter
-                        anchors.verticalCenter: plusBrightness.verticalCenter
+                         anchors.centerIn: plusBrightness.horizontalCenter
                          }
                      }
                  }
@@ -510,8 +509,7 @@ ApplicationWindow {
                          //anchors.fill: plusBrightness
                          width: minusBrightness.width
                          height: minusBrightness.height
-                         anchors.horizontalCenter: minusBrightness.horizontalCenter
-                        anchors.verticalCenter: minusBrightness.verticalCenter
+                         anchors.centerIn: minusBrightness.horizontalCenter
                          }
                      }
                  }
@@ -763,8 +761,9 @@ ApplicationWindow {
                                digitalInput5, digitalInput6, digitalInput7, digitalInput8];
         const currentInput = digitalInputs[custom.digiValue];
 
-        //console.log("Selected Input Index:", custom.digiValue);
-        //console.log("Selected Input State:", currentInput);
+        // ✅ Debugging logs to see what's happening
+        console.log("Selected Input Index:", custom.digiValue);
+        console.log("Selected Input State:", currentInput);
 
         // If debounce is active or input hasn't changed, return early
         if (debounceActive || currentInput === lastInputState) return;
