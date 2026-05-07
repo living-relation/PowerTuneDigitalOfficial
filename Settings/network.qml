@@ -251,7 +251,7 @@ Rectangle {
         }
         Text {
             id: ethernetip
-            text: Translator.translate("Ethernet IP adress", Dashboard.language)
+            text: Translator.translate("Ethernet IP address", Dashboard.language)
             font.pixelSize: extrarect.width / 55
             visible: true
         }
@@ -281,7 +281,7 @@ Rectangle {
 
         Text {
             id: wlanip
-            text: Translator.translate("WLAN IP adress", Dashboard.language)
+            text: Translator.translate("WLAN IP address", Dashboard.language)
             font.pixelSize: extrarect.width / 55
             visible: true
         }
