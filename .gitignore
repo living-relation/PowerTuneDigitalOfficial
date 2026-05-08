@@ -9,3 +9,12 @@ appsettings.cpp.autosave
 
 # Local build output (qmake in /build)
 build/__pycache__/
+
+# In-tree build artifacts (qmake + make from workspace root)
+*.o
+moc_*.cpp
+moc_predefs.h
+qrc_qml.cpp
+.qmake.stash
+Makefile
+PowertuneQMLGui
