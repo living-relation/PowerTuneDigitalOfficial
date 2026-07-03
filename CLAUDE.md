@@ -125,11 +125,21 @@ exercised in a VM/container.
 
 ## Code style
 
-- **C++:** `cpplint` is the only enforced linter. Config: `CPPLINT.cfg`
-  (`filter=-build/include_subdir,-build/include_order`, because headers are
-  flat at repo root rather than in subdirectories). CI (`cpplint_modified_files.yml`)
-  only lints files that changed vs `origin/main` in a given PR, using
-  `--linelength=120 --filter=-legal/copyright,-whitespace/braces`.
+- **C++:** `cpplint` is the only enforced linter. Config: `CPPLINT.cfg`. Its
+  `filter=` line disables `-build/include_subdir` and `-build/include_order`
+  (headers are flat at repo root, not in subdirectories) plus a set of
+  `whitespace/*` categories (`whitespace/comments`, `whitespace/blank_line`,
+  `whitespace/parens`, `whitespace/tab`, `whitespace/operators`,
+  `whitespace/comma`, `whitespace/newline`, `whitespace/indent`,
+  `whitespace/semicolon`, `whitespace/end_of_line`) — these are suppressed
+  because this is long-lived legacy code that predates consistent spacing
+  conventions, so enabling them surfaces ~1000 pre-existing style-only findings
+  on any touched file. Categories that still catch real issues remain active
+  (`readability/*`, `build/namespaces`, `whitespace/line_length`,
+  `whitespace/forcolon`, `whitespace/empty_if_body`, etc.). CI
+  (`cpplint_modified_files.yml`) only lints files that changed vs `origin/main`
+  in a given PR, using `--linelength=120 --filter=-legal/copyright,-whitespace/braces`
+  (these CLI filters combine with the `CPPLINT.cfg` ones).
 - **QML/JS:** `qmllint` is the only checker.
 - There is **no clang-format, ESLint, or Prettier config** in this repo — don't
   invent or apply formatting rules that aren't actually enforced; match the
