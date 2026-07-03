@@ -162,7 +162,7 @@ void DownloadManager::startNextDownload()
 
     // prepare the output
     printf("Downloading %s...\n", url.toEncoded().constData());
-    setDownloadFilename(QString::fromLatin1(url.toEncoded()));
+    setDownloadFilename(filename);
     downloadTimer.start();
 }
 
