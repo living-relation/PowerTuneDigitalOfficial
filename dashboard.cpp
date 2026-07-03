@@ -3983,8 +3983,9 @@ We already know the Values of Rw and R3 as well as Vin , now we need to calculat
     //EXAnalogInput0 = Measured Voltage
 
 
+    // Calculating the Resistance of the Sensor R3
     qreal safeEXAnalogInput0 = qBound(0.001, EXAnalogInput0, 4.999);
-    ResistanceEXAN0 = (Rtotalexan0 *(5-safeEXAnalogInput0))/safeEXAnalogInput0; // Calculating the Resistance of the Sensor R3
+    ResistanceEXAN0 = (Rtotalexan0 *(5-safeEXAnalogInput0))/safeEXAnalogInput0;
     //qDebug() <<"Sensor Ohms   :" << ResistanceEXAN0;
     qreal tempK = 1/(A0+(B0*log(ResistanceEXAN0)) + C0* pow(log(ResistanceEXAN0),3))-273.15; // Determine Temperature based on R3 Value with Steinhart Hart Formula
 
@@ -4009,8 +4010,9 @@ void DashBoard::setEXAnalogInput1(const qreal &EXAnalogInput1)
     else
     {
 
+    // Calculating the Resistance of the Sensor R1
     qreal safeEXAnalogInput1 = qBound(0.001, EXAnalogInput1, 4.999);
-    ResistanceEXAN1 = (Rtotalexan1 *(5-safeEXAnalogInput1))/safeEXAnalogInput1; // Calculating the Resistance of the Sensor R1
+    ResistanceEXAN1 = (Rtotalexan1 *(5-safeEXAnalogInput1))/safeEXAnalogInput1;
     qreal tempK = 1/(A1+(B1*log(ResistanceEXAN1)) + C1* pow(log(ResistanceEXAN1),3))-273.15;
     if (m_units == "metric")
     { setEXAnalogCalc1(tempK);}
@@ -4031,8 +4033,9 @@ void DashBoard::setEXAnalogInput2(const qreal &EXAnalogInput2)
     }
     else
     {
+    // Calculating the Resistance of the Sensor R1
     qreal safeEXAnalogInput2 = qBound(0.001, EXAnalogInput2, 4.999);
-    ResistanceEXAN2 = (Rtotalexan2 *(5-safeEXAnalogInput2))/safeEXAnalogInput2; // Calculating the Resistance of the Sensor R1
+    ResistanceEXAN2 = (Rtotalexan2 *(5-safeEXAnalogInput2))/safeEXAnalogInput2;
     qreal tempK = 1/(A2+(B2*log(ResistanceEXAN2)) + C2* pow(log(ResistanceEXAN2),3))-273.15;
     if (m_units == "metric")
     { setEXAnalogCalc2(tempK);}
@@ -4054,8 +4057,9 @@ void DashBoard::setEXAnalogInput3(const qreal &EXAnalogInput3)
     else
     {
 
+    // Calculating the Resistance of the Sensor R1
     qreal safeEXAnalogInput3 = qBound(0.001, EXAnalogInput3, 4.999);
-    ResistanceEXAN3 = (Rtotalexan3 *(5-safeEXAnalogInput3))/safeEXAnalogInput3; // Calculating the Resistance of the Sensor R1
+    ResistanceEXAN3 = (Rtotalexan3 *(5-safeEXAnalogInput3))/safeEXAnalogInput3;
     qreal tempK = 1/(A3+(B3*log(ResistanceEXAN3)) + C3* pow(log(ResistanceEXAN3),3))-273.15;
     if (m_units == "metric")
     { setEXAnalogCalc3(tempK);}
@@ -4077,8 +4081,9 @@ void DashBoard::setEXAnalogInput4(const qreal &EXAnalogInput4)
     else
     {
 
+    // Calculating the Resistance of the Sensor R1
     qreal safeEXAnalogInput4 = qBound(0.001, EXAnalogInput4, 4.999);
-    ResistanceEXAN4 = (Rtotalexan4 *(5-safeEXAnalogInput4))/safeEXAnalogInput4; // Calculating the Resistance of the Sensor R1
+    ResistanceEXAN4 = (Rtotalexan4 *(5-safeEXAnalogInput4))/safeEXAnalogInput4;
     qreal tempK = 1/(A4+(B4*log(ResistanceEXAN4)) + C4* pow(log(ResistanceEXAN4),3))-273.15;
     if (m_units == "metric")
     { setEXAnalogCalc4(tempK);}
@@ -4101,8 +4106,9 @@ void DashBoard::setEXAnalogInput5(const qreal &EXAnalogInput5)
     else
     {
 
+    // Calculating the Resistance of the Sensor R1
     qreal safeEXAnalogInput5 = qBound(0.001, EXAnalogInput5, 4.999);
-    ResistanceEXAN5 = (Rtotalexan5 *(5-safeEXAnalogInput5))/safeEXAnalogInput5; // Calculating the Resistance of the Sensor R1
+    ResistanceEXAN5 = (Rtotalexan5 *(5-safeEXAnalogInput5))/safeEXAnalogInput5;
     qreal tempK = 1/(A5+(B5*log(ResistanceEXAN5)) + C5* pow(log(ResistanceEXAN5),3))-273.15;
     if (m_units == "metric")
     { setEXAnalogCalc5(tempK);}

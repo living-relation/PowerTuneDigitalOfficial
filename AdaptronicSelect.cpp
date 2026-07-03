@@ -40,7 +40,7 @@ void AdaptronicSelect::openConnection(const QString &portName)
     {
     modbusDevice = new QModbusRtuSerialMaster(this);
     connect(this,SIGNAL(sig_adaptronicReadFinished()),this,SLOT(AdaptronicStartStream()));
-    //qDebug() << "Modbusdevice created" ;
+    // qDebug() << "Modbusdevice created" ;
     }
 
      {
@@ -59,7 +59,7 @@ void AdaptronicSelect::openConnection(const QString &portName)
             modbusDevice->connectDevice();
             if (modbusDevice->state() != QModbusDevice::ConnectedState)
             {
-                //qDebug()<< "error creating Modbus device";
+                // qDebug()<< "error creating Modbus device";
                 delete modbusDevice;
                 modbusDevice = nullptr;
             }
