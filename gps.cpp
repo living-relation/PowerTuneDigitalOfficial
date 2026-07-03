@@ -203,7 +203,7 @@ void GPS::closeConnection()
 
 void GPS::handleError(QSerialPort::SerialPortError serialPortError)
 {
-    Q_UNUSED(serialPortError)
+    Q_UNUSED(serialPortError);
     if (m_serialport->errorString() == "No error")
     {
         // qDebug() << "handle error" << m_serialport->errorString() ;

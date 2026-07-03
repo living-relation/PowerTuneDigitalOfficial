@@ -1414,8 +1414,8 @@ void Connect::processOutput()
 
 void Connect::updatefinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    Q_UNUSED(exitCode)
-    Q_UNUSED(exitStatus)
+    Q_UNUSED(exitCode);
+    Q_UNUSED(exitStatus);
     // qDebug() << "code" <<exitCode;
     // qDebug() << "status" <<exitStatus;
     QString fileName = "/home/pi/build/PowertuneQMLGui";
