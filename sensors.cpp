@@ -154,8 +154,9 @@ void Sensors::updatePressureSens()
         m_dashboard->setambipress(press_reading->pressure());
     }
 }
-void Sensors::error(int)
+void Sensors::error(int errorCode)
 {
+    Q_UNUSED(errorCode);
 
 }
 

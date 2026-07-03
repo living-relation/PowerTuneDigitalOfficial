@@ -111,7 +111,8 @@ QList<QString> ioMapData::getCountries()
 
      if (trackfolder.exists()){
 
-             QDirIterator directories(path, QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+             QDirIterator directories(path, QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot,
+                                      QDirIterator::Subdirectories);
                  //qDebug() <<"List Directories";
              while(directories.hasNext()){
                  directories.next();
@@ -183,7 +184,8 @@ QDir trackfolder = path;
 
 if (trackfolder.exists()){
 
-        QDirIterator directories(path, QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+        QDirIterator directories(path, QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot,
+                                  QDirIterator::Subdirectories);
             //qDebug() <<"List Directories";
         while(directories.hasNext()){
             directories.next();

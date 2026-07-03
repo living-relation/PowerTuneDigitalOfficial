@@ -54,7 +54,7 @@ void udpreceiver::processPendingDatagrams()
     QByteArray datagram;
 
     while (udpSocket->hasPendingDatagrams()) {
-        datagram.resize(int(udpSocket->pendingDatagramSize()));
+        datagram.resize(static_cast<int>(udpSocket->pendingDatagramSize()));
         udpSocket->readDatagram(datagram.data(), datagram.size());
 
         QDataStream in(&datagram, QIODevice::ReadOnly);

@@ -54,8 +54,6 @@
 #include <QDebug>
 #include <cstdio>
 
-using namespace std;
-
 
 bool resetFlag = false;
 DownloadManager::DownloadManager(QObject *parent)

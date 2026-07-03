@@ -106,7 +106,8 @@ void WifiScanner::getconnectionStatus()
 
 }
 
-void WifiScanner::setwifi(const QString &country,const QString &ssid1,const QString &psk1,const QString &ssid2,const QString &psk2)
+void WifiScanner::setwifi(const QString &country, const QString &ssid1, const QString &psk1,
+                           const QString &ssid2, const QString &psk2)
 {
     Q_UNUSED(ssid2);
     Q_UNUSED(psk2);

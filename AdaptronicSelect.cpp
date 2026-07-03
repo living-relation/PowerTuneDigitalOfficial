@@ -86,9 +86,11 @@ void AdaptronicSelect::closeConnection()
 
 void AdaptronicSelect::AdaptronicStartStream()
 {
-    auto *reply = modbusDevice->sendReadRequest(QModbusDataUnit(QModbusDataUnit::HoldingRegisters, 4096, 21),1); // read first twenty-one realtime values
+    // read first twenty-one realtime values
+    auto *reply = modbusDevice->sendReadRequest(QModbusDataUnit(QModbusDataUnit::HoldingRegisters, 4096, 21), 1);
     if (!reply) {
-        qWarning() << "AdaptronicStartStream: sendReadRequest returned nullptr – device not connected or request could not be queued";
+        qWarning() << "AdaptronicStartStream: sendReadRequest returned nullptr - device not connected"
+                   << "or request could not be queued";
         return;
     }
     qDebug() << "send: holding registers start=4096 count=21 unitId=1";
