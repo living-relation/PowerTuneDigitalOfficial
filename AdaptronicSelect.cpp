@@ -40,7 +40,7 @@ void AdaptronicSelect::openConnection(const QString &portName)
     {
     modbusDevice = new QModbusRtuSerialMaster(this);
     connect(this,SIGNAL(sig_adaptronicReadFinished()),this,SLOT(AdaptronicStartStream()));
-    qDebug() << "Modbusdevice created" ;
+    // qDebug() << "Modbusdevice created" ;
     }
 
      {
@@ -59,7 +59,7 @@ void AdaptronicSelect::openConnection(const QString &portName)
             modbusDevice->connectDevice();
             if (modbusDevice->state() != QModbusDevice::ConnectedState)
             {
-                qDebug()<< "error creating Modbus device";
+                // qDebug()<< "error creating Modbus device";
                 delete modbusDevice;
                 modbusDevice = nullptr;
             }
@@ -86,9 +86,11 @@ void AdaptronicSelect::closeConnection()
 
 void AdaptronicSelect::AdaptronicStartStream()
 {
-    auto *reply = modbusDevice->sendReadRequest(QModbusDataUnit(QModbusDataUnit::HoldingRegisters, 4096, 21),1); // read first twenty-one realtime values
+    // read first twenty-one realtime values
+    auto *reply = modbusDevice->sendReadRequest(QModbusDataUnit(QModbusDataUnit::HoldingRegisters, 4096, 21), 1);
     if (!reply) {
-        qWarning() << "AdaptronicStartStream: sendReadRequest returned nullptr – device not connected or request could not be queued";
+        qWarning() << "AdaptronicStartStream: sendReadRequest returned nullptr - device not connected"
+                   << "or request could not be queued";
         return;
     }
     qDebug() << "send: holding registers start=4096 count=21 unitId=1";
@@ -118,7 +120,7 @@ void AdaptronicSelect::readyToRead()
 void AdaptronicSelect::decodeAdaptronic(QModbusDataUnit unit)
 {
 
-    qreal realBoost;
+    qreal realBoost = 0;
     int Boostconv;
 
     //qDebug()<<"Watertemp: " <<unit.value(3);

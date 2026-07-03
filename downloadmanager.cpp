@@ -54,8 +54,6 @@
 #include <QDebug>
 #include <cstdio>
 
-using namespace std;
-
 
 bool resetFlag = false;
 DownloadManager::DownloadManager(QObject *parent)
@@ -162,7 +160,7 @@ void DownloadManager::startNextDownload()
 
     // prepare the output
     printf("Downloading %s...\n", url.toEncoded().constData());
-    setDownloadFilename(QString::fromLatin1(url.toEncoded()));
+    setDownloadFilename(filename);
     downloadTimer.start();
 }
 

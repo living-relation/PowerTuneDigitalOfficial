@@ -134,7 +134,7 @@ void Sensors::updateAccel()
 void Sensors::updateGyro()
 {
     gyro_reading = Gyroscope->reading();
-    if(accel_reading != 0) {
+    if(gyro_reading != 0) {
         m_dashboard->setgyrox(gyro_reading->x());
         m_dashboard->setgyroy(gyro_reading->y());
         m_dashboard->setgyroz(gyro_reading->z());
@@ -154,8 +154,9 @@ void Sensors::updatePressureSens()
         m_dashboard->setambipress(press_reading->pressure());
     }
 }
-void Sensors::error(int)
+void Sensors::error(int errorCode)
 {
+    Q_UNUSED(errorCode);
 
 }
 

@@ -7,8 +7,11 @@ appsettings.cpp.autosave
 
 .idea/
 
-# Local build output (qmake in /build)
-build/__pycache__/
+# Local build output (qmake in /build), including Qt Creator shadow builds
+# and their generated clangd compilation databases (e.g.
+# build/Desktop_Qt_6_11_1-Debug/.qtc_clangd/compile_commands.json)
+build/
+**/.qtc_clangd/
 
 # In-tree build artifacts (qmake + make from workspace root)
 *.o

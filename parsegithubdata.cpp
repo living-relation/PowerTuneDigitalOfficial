@@ -17,7 +17,8 @@ QList<QString> parsegithubData::readTrackData()
     #ifdef __linux__
         pathString = ("/opt/PowerTune/repo.txt"); // Opens the embeded KML file/txt
     #elif _WIN32
-        pathString = (QCoreApplication::applicationFilePath().remove("release/PowertuneQMLGui.exe") + "repo.txt"); // Opens the repo track list
+        // Opens the repo track list
+        pathString = (QCoreApplication::applicationFilePath().remove("release/PowertuneQMLGui.exe") + "repo.txt");
     #else
 
     #endif
@@ -34,6 +35,10 @@ QList<QString> parsegithubData::readTrackData()
             QString line = in.readLine();
             //qDebug() << line;
             QList<QString> splitList = line.split(":");
+            if (splitList.size() < 2)
+            {
+                continue;
+            }
             tempPair.first = splitList[0];
             tempPair.second = splitList[1];
             returnData.append(tempPair);
@@ -44,11 +49,13 @@ QList<QString> parsegithubData::readTrackData()
 
     pairs = returnData;
     QList<QString> returnStringList;
-    for(QPair<QString,QString> pair: returnData)
+    for(QPair<QString,QString> pair : returnData)
     {
         QString tempString;
-        //tempString = "https://raw.githubusercontent.com/Deadelven/PTKML/main/kmls/" + pair.first + "/" +pair.second+".txt";
-        tempString = "https://gitlab.com/PowerTuneDigital/PowertuneTracks/-/raw/main/Tracks/" + pair.first + "/" +pair.second;
+        // tempString = "https://raw.githubusercontent.com/Deadelven/PTKML/main/kmls/"
+        //     + pair.first + "/" +pair.second+".txt";
+        tempString = "https://gitlab.com/PowerTuneDigital/PowertuneTracks/-/raw/main/Tracks/"
+            + pair.first + "/" +pair.second;
         returnStringList.append(tempString);
     }
     return returnStringList;
@@ -75,7 +82,7 @@ void parsegithubData::sortDownloadedFiles()
 
 
 
-    for(QPair<QString,QString> pair: pairs)
+    for(QPair<QString,QString> pair : pairs)
     {
         QFileInfo outputDir(destinationString+pair.first);
        // qDebug() <<"Output directory"<< outputDir;
@@ -95,7 +102,8 @@ void parsegithubData::sortDownloadedFiles()
        // qDebug() << "CopyString " << p2String+pair.second << " TO " << destinationString+pair.first+"/" + pair.second;
         //QFile::copy(p2String+pair.second, destinationString+pair.first+"/" + pair.second);
         if(!QFile::copy(p2String+pair.second, destinationString+pair.first+"/" + pair.second)){
-                     // qDebug() << "Copy Failure!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; // Still need to do something here in case copy fails
+                     // qDebug() << "Copy Failure!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+                     // Still need to do something here in case copy fails
               }
         //remove original files after they been copied
         QFile::remove(p2String+pair.second);

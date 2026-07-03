@@ -112,6 +112,14 @@ DashBoard::DashBoard(QObject *parent)
     , m_speed(0)
     , m_Iscvduty(0)
     , m_O2volt(0)
+    , m_Cyl1_O2_Corr(0)
+    , m_Cyl2_O2_Corr(0)
+    , m_Cyl3_O2_Corr(0)
+    , m_Cyl4_O2_Corr(0)
+    , m_Cyl5_O2_Corr(0)
+    , m_Cyl6_O2_Corr(0)
+    , m_Cyl7_O2_Corr(0)
+    , m_Cyl8_O2_Corr(0)
     , m_na1(0)
     , m_Secinjpulse(0)
     , m_na2(0)
@@ -130,14 +138,6 @@ DashBoard::DashBoard(QObject *parent)
     , m_BoostDuty(0)
     , m_MAFactivity(0)
     , m_O2volt_2(0)
-    , m_Cyl1_O2_Corr(0)
-    , m_Cyl2_O2_Corr(0)
-    , m_Cyl3_O2_Corr(0)
-    , m_Cyl4_O2_Corr(0)
-    , m_Cyl5_O2_Corr(0)
-    , m_Cyl6_O2_Corr(0)
-    , m_Cyl7_O2_Corr(0)
-    , m_Cyl8_O2_Corr(0)
 
     //Boost
 
@@ -222,8 +222,8 @@ DashBoard::DashBoard(QObject *parent)
 
     //Adaptronic extra
     , m_MAP(0)
-    , m_MAP2(0)
     , m_PANVAC(0)
+    , m_MAP2(0)
     , m_AUXT(0)
     , m_AFR(0)
     , m_AFRLEFTBANKTARGET(0)
@@ -678,7 +678,11 @@ void DashBoard::setNMEAlog(const int &NMEAlog)
     emit NMEAlogChanged(NMEAlog);
 }
 
-void DashBoard::setAnalogVal(const qreal &A00,const qreal &A05,const qreal &A10,const qreal &A15,const qreal &A20,const qreal &A25,const qreal &A30,const qreal &A35,const qreal &A40,const qreal &A45,const qreal &A50,const qreal &A55,const qreal &A60,const qreal &A65,const qreal &A70,const qreal &A75,const qreal &A80,const qreal &A85,const qreal &A90,const qreal &A95,const qreal &A100,const qreal &A105)
+void DashBoard::setAnalogVal(const qreal &A00, const qreal &A05, const qreal &A10, const qreal &A15, const qreal &A20,
+                             const qreal &A25, const qreal &A30, const qreal &A35, const qreal &A40, const qreal &A45,
+                             const qreal &A50, const qreal &A55, const qreal &A60, const qreal &A65, const qreal &A70,
+                             const qreal &A75, const qreal &A80, const qreal &A85, const qreal &A90, const qreal &A95,
+                             const qreal &A100, const qreal &A105)
 {
     AN00 = A00;
     AN05 = A05;
@@ -705,7 +709,15 @@ void DashBoard::setAnalogVal(const qreal &A00,const qreal &A05,const qreal &A10,
 
 
 }
-void DashBoard::setEXAnalogVal(const qreal &EXA00,const qreal &EXA05,const qreal &EXA10,const qreal &EXA15,const qreal &EXA20,const qreal &EXA25,const qreal &EXA30,const qreal &EXA35,const qreal &EXA40,const qreal &EXA45,const qreal &EXA50,const qreal &EXA55,const qreal &EXA60,const qreal &EXA65,const qreal &EXA70,const qreal &EXA75, const int &steinhartcalc0on, const int &steinhartcalc1on, const int &steinhartcalc2on, const int &steinhartcalc3on, const int &steinhartcalc4on, const int &steinhartcalc5on,const int &AN0R3VAL,const int &AN0R4VAL,const int &AN1R3VAL,const int &AN1R4VAL,const int &AN2R3VAL,const int &AN2R4VAL,const int &AN3R3VAL,const int &AN3R4VAL,const int &AN4R3VAL,const int &AN4R4VAL,const int &AN5R3VAL,const int &AN5R4VAL)
+void DashBoard::setEXAnalogVal(const qreal &EXA00, const qreal &EXA05, const qreal &EXA10, const qreal &EXA15,
+                               const qreal &EXA20, const qreal &EXA25, const qreal &EXA30, const qreal &EXA35,
+                               const qreal &EXA40, const qreal &EXA45, const qreal &EXA50, const qreal &EXA55,
+                               const qreal &EXA60, const qreal &EXA65, const qreal &EXA70, const qreal &EXA75,
+                               const int &steinhartcalc0on, const int &steinhartcalc1on, const int &steinhartcalc2on,
+                               const int &steinhartcalc3on, const int &steinhartcalc4on, const int &steinhartcalc5on,
+                               const int &AN0R3VAL, const int &AN0R4VAL, const int &AN1R3VAL, const int &AN1R4VAL,
+                               const int &AN2R3VAL, const int &AN2R4VAL, const int &AN3R3VAL, const int &AN3R4VAL,
+                               const int &AN4R3VAL, const int &AN4R4VAL, const int &AN5R3VAL, const int &AN5R4VAL)
 {
 
     EXAN00 = EXA00;
@@ -848,7 +860,15 @@ void DashBoard::setEXAnalogVal(const qreal &EXA00,const qreal &EXA05,const qreal
 
 }
 
-void DashBoard::setSteinhartcalc(const qreal &T01,const qreal &T02,const qreal &T03,const qreal &R01,const qreal &R02,const qreal &R03,const qreal &T11,const qreal &T12,const qreal &T13,const qreal &R11,const qreal &R12,const qreal &R13,const qreal &T21,const qreal &T22,const qreal &T23,const qreal &R21,const qreal &R22,const qreal &R23,const qreal &T31,const qreal &T32,const qreal &T33,const qreal &R31,const qreal &R32,const qreal &R33,const qreal &T41,const qreal &T42,const qreal &T43,const qreal &R41,const qreal &R42,const qreal &R43,const qreal &T51,const qreal &T52,const qreal &T53,const qreal &R51,const qreal &R52,const qreal &R53)
+void DashBoard::setSteinhartcalc(const qreal &T01, const qreal &T02, const qreal &T03, const qreal &R01,
+                                 const qreal &R02, const qreal &R03, const qreal &T11, const qreal &T12,
+                                 const qreal &T13, const qreal &R11, const qreal &R12, const qreal &R13,
+                                 const qreal &T21, const qreal &T22, const qreal &T23, const qreal &R21,
+                                 const qreal &R22, const qreal &R23, const qreal &T31, const qreal &T32,
+                                 const qreal &T33, const qreal &R31, const qreal &R32, const qreal &R33,
+                                 const qreal &T41, const qreal &T42, const qreal &T43, const qreal &R41,
+                                 const qreal &R42, const qreal &R43, const qreal &T51, const qreal &T52,
+                                 const qreal &T53, const qreal &R51, const qreal &R52, const qreal &R53)
 {
 
     //EX Analog 0 Calculation
@@ -980,6 +1000,10 @@ void DashBoard::setrpm(const qreal &rpm)
     //Smoothing
     if (m_smoothrpm >0)
     {
+        if (averageRPM.size() != m_smoothrpm)
+        {
+            averageRPM.resize(m_smoothrpm);
+        }
         averageRPM.removeFirst();
         averageRPM.append(m_rpm);
         avgrpm = 0;
@@ -1165,7 +1189,14 @@ void DashBoard::setSpeed(const qreal &speed)
     {m_speed = qRound((speed * 0.621371) * m_speedpercent);}
     if (m_smoothspeed != 0)
     {
-        averageSpeed.removeFirst();
+        if (m_smoothspeed > 0 && averageSpeed.size() != m_smoothspeed)
+        {
+            averageSpeed.resize(m_smoothspeed);
+        }
+        if (!averageSpeed.isEmpty())
+        {
+            averageSpeed.removeFirst();
+        }
         averageSpeed.append(m_speed);
         //qDebug() << "Vector Speed " << averageSpeed;
         avgspeed = 0;
@@ -1188,7 +1219,14 @@ void DashBoard::setSerialSpeed(const qreal &speed)
     {m_speed = qRound(speed/m_pulsespermile * m_speedpercent);}
     if (m_smoothspeed != 0)
     {
-        averageSpeed.removeFirst();
+        if (m_smoothspeed > 0 && averageSpeed.size() != m_smoothspeed)
+        {
+            averageSpeed.resize(m_smoothspeed);
+        }
+        if (!averageSpeed.isEmpty())
+        {
+            averageSpeed.removeFirst();
+        }
         averageSpeed.append(m_speed);
         //qDebug() << "Vector Speed " << averageSpeed;
         avgspeed = 0;
@@ -3517,8 +3555,13 @@ void DashBoard::setsmoothrpm(const int &smoothrpm)
     if (m_smoothrpm == smoothrpm)
         return;
     if (smoothrpm != 0)
-    {m_smoothrpm = smoothrpm+1;}
-    else {m_smoothrpm = smoothrpm;}
+    {
+        m_smoothrpm = smoothrpm+1;
+    }
+    else
+    {
+        m_smoothrpm = smoothrpm;
+    }
     //qDebug()<<"SmoothRPM" << m_smoothrpm;
     averageRPM.resize(m_smoothrpm);
     emit smoothrpmChanged(smoothrpm);
@@ -3528,8 +3571,13 @@ void DashBoard::setsmoothspeed(const int &smoothspeed)
     if (m_smoothspeed == smoothspeed)
         return;
     if (smoothspeed != 0)
-    {m_smoothspeed = smoothspeed+1;}
-    else {m_smoothspeed = smoothspeed;}
+    {
+        m_smoothspeed = smoothspeed+1;
+    }
+    else
+    {
+        m_smoothspeed = smoothspeed;
+    }
     averageSpeed.resize(m_smoothspeed);
     //qDebug()<<"SmoothSpeed" << m_smoothrpm;
     emit smoothspeedChanged(smoothspeed);
@@ -3541,8 +3589,13 @@ void DashBoard::setsmootexAnalogInput7(const int &smoothexAnalogInput7)
     if (m_smoothexAnalogInput7 == smoothexAnalogInput7)
         return;
     if (smoothexAnalogInput7 != 0)
-    {m_smoothexAnalogInput7 = smoothexAnalogInput7+1;}
-    else {m_smoothexAnalogInput7 = smoothexAnalogInput7;}
+    {
+        m_smoothexAnalogInput7 = smoothexAnalogInput7+1;
+    }
+    else
+    {
+        m_smoothexAnalogInput7 = smoothexAnalogInput7;
+    }
     averageexanaloginput7.resize(m_smoothexAnalogInput7);
     //qDebug()<<"SmoothSpeed" << m_smoothrpm;
     emit smootexAnalogInput7Changed(smoothexAnalogInput7);
@@ -3661,7 +3714,7 @@ void DashBoard::setCalibrationSelect(const int &CalibrationSelect)
 
 void DashBoard::setError(const QString &Error)
 {
-    if (m_ecu == Error)
+    if (m_Error == Error)
         return;
     m_Error = Error;
     emit ErrorChanged(Error);
@@ -3965,9 +4018,12 @@ We already know the Values of Rw and R3 as well as Vin , now we need to calculat
     //EXAnalogInput0 = Measured Voltage
 
 
-    ResistanceEXAN0 = (Rtotalexan0 *(5-EXAnalogInput0))/EXAnalogInput0; // Calculating the Resistance of the Sensor R3
+    // Calculating the Resistance of the Sensor R3
+    qreal safeEXAnalogInput0 = qBound(0.001, EXAnalogInput0, 4.999);
+    ResistanceEXAN0 = (Rtotalexan0 *(5-safeEXAnalogInput0))/safeEXAnalogInput0;
     //qDebug() <<"Sensor Ohms   :" << ResistanceEXAN0;
-    qreal tempK = 1/(A0+(B0*log(ResistanceEXAN0)) + C0* pow(log(ResistanceEXAN0),3))-273.15; // Determine Temperature based on R3 Value with Steinhart Hart Formula
+    // Determine Temperature based on R3 Value with Steinhart Hart Formula
+    qreal tempK = 1/(A0+(B0*log(ResistanceEXAN0)) + C0* pow(log(ResistanceEXAN0),3))-273.15;
 
     if (m_units == "metric")
     { setEXAnalogCalc0(tempK);}
@@ -3990,7 +4046,9 @@ void DashBoard::setEXAnalogInput1(const qreal &EXAnalogInput1)
     else
     {
 
-    ResistanceEXAN1 = (Rtotalexan1 *(5-EXAnalogInput1))/EXAnalogInput1; // Calculating the Resistance of the Sensor R1
+    // Calculating the Resistance of the Sensor R1
+    qreal safeEXAnalogInput1 = qBound(0.001, EXAnalogInput1, 4.999);
+    ResistanceEXAN1 = (Rtotalexan1 *(5-safeEXAnalogInput1))/safeEXAnalogInput1;
     qreal tempK = 1/(A1+(B1*log(ResistanceEXAN1)) + C1* pow(log(ResistanceEXAN1),3))-273.15;
     if (m_units == "metric")
     { setEXAnalogCalc1(tempK);}
@@ -4011,7 +4069,9 @@ void DashBoard::setEXAnalogInput2(const qreal &EXAnalogInput2)
     }
     else
     {
-    ResistanceEXAN2 = (Rtotalexan2 *(5-EXAnalogInput2))/EXAnalogInput2; // Calculating the Resistance of the Sensor R1
+    // Calculating the Resistance of the Sensor R1
+    qreal safeEXAnalogInput2 = qBound(0.001, EXAnalogInput2, 4.999);
+    ResistanceEXAN2 = (Rtotalexan2 *(5-safeEXAnalogInput2))/safeEXAnalogInput2;
     qreal tempK = 1/(A2+(B2*log(ResistanceEXAN2)) + C2* pow(log(ResistanceEXAN2),3))-273.15;
     if (m_units == "metric")
     { setEXAnalogCalc2(tempK);}
@@ -4033,7 +4093,9 @@ void DashBoard::setEXAnalogInput3(const qreal &EXAnalogInput3)
     else
     {
 
-    ResistanceEXAN3 = (Rtotalexan3 *(5-EXAnalogInput3))/EXAnalogInput3; // Calculating the Resistance of the Sensor R1
+    // Calculating the Resistance of the Sensor R1
+    qreal safeEXAnalogInput3 = qBound(0.001, EXAnalogInput3, 4.999);
+    ResistanceEXAN3 = (Rtotalexan3 *(5-safeEXAnalogInput3))/safeEXAnalogInput3;
     qreal tempK = 1/(A3+(B3*log(ResistanceEXAN3)) + C3* pow(log(ResistanceEXAN3),3))-273.15;
     if (m_units == "metric")
     { setEXAnalogCalc3(tempK);}
@@ -4055,7 +4117,9 @@ void DashBoard::setEXAnalogInput4(const qreal &EXAnalogInput4)
     else
     {
 
-    ResistanceEXAN4 = (Rtotalexan4 *(5-EXAnalogInput4))/EXAnalogInput4; // Calculating the Resistance of the Sensor R1
+    // Calculating the Resistance of the Sensor R1
+    qreal safeEXAnalogInput4 = qBound(0.001, EXAnalogInput4, 4.999);
+    ResistanceEXAN4 = (Rtotalexan4 *(5-safeEXAnalogInput4))/safeEXAnalogInput4;
     qreal tempK = 1/(A4+(B4*log(ResistanceEXAN4)) + C4* pow(log(ResistanceEXAN4),3))-273.15;
     if (m_units == "metric")
     { setEXAnalogCalc4(tempK);}
@@ -4078,7 +4142,9 @@ void DashBoard::setEXAnalogInput5(const qreal &EXAnalogInput5)
     else
     {
 
-    ResistanceEXAN5 = (Rtotalexan5 *(5-EXAnalogInput5))/EXAnalogInput5; // Calculating the Resistance of the Sensor R1
+    // Calculating the Resistance of the Sensor R1
+    qreal safeEXAnalogInput5 = qBound(0.001, EXAnalogInput5, 4.999);
+    ResistanceEXAN5 = (Rtotalexan5 *(5-safeEXAnalogInput5))/safeEXAnalogInput5;
     qreal tempK = 1/(A5+(B5*log(ResistanceEXAN5)) + C5* pow(log(ResistanceEXAN5),3))-273.15;
     if (m_units == "metric")
     { setEXAnalogCalc5(tempK);}
@@ -4102,7 +4168,14 @@ void DashBoard::setEXAnalogInput7(const qreal &EXAnalogInput7)
     //qDebug() << "Smooth ? " << m_smoothexAnalogInput7;
     if (m_smoothexAnalogInput7 != 0)
     {
-        averageexanaloginput7.removeFirst();
+        if (m_smoothexAnalogInput7 > 0 && averageexanaloginput7.size() != m_smoothexAnalogInput7)
+        {
+            averageexanaloginput7.resize(m_smoothexAnalogInput7);
+        }
+        if (!averageexanaloginput7.isEmpty())
+        {
+            averageexanaloginput7.removeFirst();
+        }
         averageexanaloginput7.append(m_EXAnalogInput7);
         //qDebug() << "averageexanaloginput7 " << averageexanaloginput7;
         avgexanaloginput7 = 0;

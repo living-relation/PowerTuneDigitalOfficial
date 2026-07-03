@@ -43,7 +43,12 @@ qreal advboost;
 double mul[80] = FC_INFO_MUL;  // required values for calculation from raw to readable values for Advanced Sensor info
 double add[] = FC_INFO_ADD;
 
-static QString mapFD3S[] ={"InjDuty", "IGL","IGT","Rpm","Speed","Boost","Knock","WtrTemp","AirTemp","BatVolt","PIM","VTA1","VTA2","VMOP","WTRT","AIRT","FUEL","O2S","STR","A/C","PWS","NTR","CLT","STP","CAT","ELD","HWL"};//	FPD	FPR	APR	PAC	CCN	TCN	PRC	AN1 raw	AN2 raw	AN3 raw	AN4 raw	AN1-AN2 Wide Band	AN2 raw	AN3 raw	AN4 raw	MAPN	MAPP	RPM	PIM	PIM V	TPS V	InjFrPr	Inj +/-	IGL	IGT	FuelT	Oil	PC%	WG%	WtrT	AirT	Knock	BatV	Speed	???(2)	O2S	???	InjFrSc
+static QString mapFD3S[] = {"InjDuty", "IGL", "IGT", "Rpm", "Speed", "Boost", "Knock", "WtrTemp",
+    "AirTemp", "BatVolt", "PIM", "VTA1", "VTA2", "VMOP", "WTRT", "AIRT", "FUEL", "O2S", "STR",
+    "A/C", "PWS", "NTR", "CLT", "STP", "CAT", "ELD", "HWL"};
+// FPD FPR APR PAC CCN TCN PRC AN1 raw AN2 raw AN3 raw AN4 raw AN1-AN2 Wide Band AN2 raw AN3 raw
+// AN4 raw MAPN MAPP RPM PIM PIM V TPS V InjFrPr Inj +/- IGL IGT FuelT Oil PC% WG% WtrT AirT Knock
+// BatV Speed ???(2) O2S ??? InjFrSc
 /*{"rpm", "pim", "pimV",
                         "TPS Voltage", "InjFp ms", "Inj",
                         "IGL", "IGT",
@@ -63,12 +68,14 @@ static QString mapFD3S[] ={"InjDuty", "IGL","IGT","Rpm","Speed","Boost","Knock",
 Apexi::Apexi(QObject *parent)
     : QObject(parent)
     , m_dashboard(Q_NULLPTR)
+    , m_serialport(Q_NULLPTR)
 {
 }
 
 Apexi::Apexi(DashBoard *dashboard, QObject *parent)
     : QObject(parent)
     , m_dashboard(dashboard)
+    , m_serialport(Q_NULLPTR)
 {
 }
 
@@ -79,12 +86,10 @@ void Apexi::SetProtocol(const int &protocolselect)
 
 void Apexi::initSerialPort()
 {
-  /*
     if (m_serialport)
     {
         delete m_serialport;
     }
-  */
     m_serialport = new SerialPort(this);
     connect(this->m_serialport,SIGNAL(readyRead()),this,SLOT(readyToRead()));
     connect(m_serialport, static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error),
@@ -131,6 +136,10 @@ void Apexi::openConnection(const QString &portName)
 }
 void Apexi::closeConnection()
 {
+    if (!m_serialport)
+    {
+        return;
+    }
     disconnect(this->m_serialport,SIGNAL(readyRead()),this,SLOT(readyToRead()));
     disconnect(m_serialport, static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error),
                this, &Apexi::handleError);
@@ -167,8 +176,7 @@ void Apexi::handleError(QSerialPort::SerialPortError serialPortError)
     if (serialPortError == QSerialPort::ReadError) {
         QString fileName = "Errors.txt";
         QFile mFile(fileName);
-        if(!mFile.open(QFile::Append | QFile::Text)){
-        }
+        mFile.open(QFile::Append | QFile::Text);
         QTextStream out(&mFile);
         out << "Serial Error " << (m_serialport->errorString()) <<endl;
         mFile.close();
@@ -234,8 +242,14 @@ void Apexi::apexiECU(const QByteArray &buffer)
         m_apexiMsg =  m_buffer;
         m_buffer.clear();
         m_timer.stop();
-        if(requestIndex <= 6){requestIndex++;}
-        else{requestIndex = 3;}
+        if(requestIndex <= 6)
+        {
+            requestIndex++;
+        }
+        else
+        {
+            requestIndex = 3;
+        }
         readData(m_apexiMsg);
         m_apexiMsg.clear();
         Apexi::sendRequest(requestIndex);
@@ -443,7 +457,8 @@ void Apexi::sendRequest(int requestIndex)
 
 
 
-void Apexi::Auxcalc (const QString &unitaux1,const qreal &an1V0,const qreal &an2V5,const QString &unitaux2,const qreal &an3V0,const qreal &an4V5)
+void Apexi::Auxcalc (const QString &unitaux1, const qreal &an1V0, const qreal &an2V5,
+                      const QString &unitaux2, const qreal &an3V0, const qreal &an4V5)
 {
     qreal aux1min = an1V0;
     qreal aux2max = an2V5;
@@ -786,32 +801,64 @@ void Apexi::decodeInit(QByteArray rawmessagedata)
 {
     Modelname = QString(rawmessagedata).mid(2,8);
     //Mazda
-    if (Modelname == "13B1    " || Modelname == "13B-REW " || Modelname == "13B-REW2" || Modelname == "13B-REW3" || Modelname == "13BT1PRO" || Modelname == "13BR1PRO" || Modelname == "13BR2PRO" || Modelname == "13BR3PRO")
+    if (Modelname == "13B1    " || Modelname == "13B-REW " || Modelname == "13B-REW2" || Modelname == "13B-REW3" ||
+        Modelname == "13BT1PRO" || Modelname == "13BR1PRO" || Modelname == "13BR2PRO" || Modelname == "13BR3PRO")
     {
         Model =1;
     }   
     //Nissan
-    if (Modelname == "NISSAN-L" || Modelname == "CA18DET " || Modelname == "SR20DE1 " || Modelname == "SR20DE2 " || Modelname == "SR20DE3 " || Modelname == "SR20DE4 " || Modelname == "SR20DET1" || Modelname == "SR20DET2" || Modelname == "SR20DET3" || Modelname == "SR20DET4" || Modelname == "SR20DET5" || Modelname == "SR20DET6" || Modelname == "SR20T1-D" || Modelname == "SR20T2-D" || Modelname == "SR20T5-D" ||Modelname == "RB20DET " || Modelname == "RB25DET " || Modelname == "RB25DET2" || Modelname == "RB26DETT" || Modelname == "VG30DETT" || Modelname == "CA181PRO" || Modelname == "SR2N1PRO" || Modelname == "SR2N2PRO" || Modelname == "SR2N3PRO" || Modelname == "SR2N4PRO" || Modelname == "SR201PRO" || Modelname == "SR202PRO" || Modelname == "SR203PRO" || Modelname == "SR204PRO" || Modelname == "SR205PRO" || Modelname == "SR206PRO" || Modelname == "RB201PRO" || Modelname == "RB251PRO" || Modelname == "RB252PRO" || Modelname == "RB261PRO" || Modelname == "RB262PRO" || Modelname == "RB26Pro " || Modelname == "RB26PRO " || Modelname == "RB26PRO1" || Modelname == "RB25PRO2" || Modelname == "CA18T1-D" || Modelname == "SR20T1-D" || Modelname == "SR20T2-D" || Modelname == "SR20T3-D" || Modelname == "SR20T4-D" || Modelname == "SR20T5-D" || Modelname == "RB26_1-D" || Modelname == "RB26_2-D" || Modelname == "VG30TT-D")
+    if (Modelname == "NISSAN-L" || Modelname == "CA18DET " || Modelname == "SR20DE1 " || Modelname == "SR20DE2 " ||
+        Modelname == "SR20DE3 " || Modelname == "SR20DE4 " || Modelname == "SR20DET1" || Modelname == "SR20DET2" ||
+        Modelname == "SR20DET3" || Modelname == "SR20DET4" || Modelname == "SR20DET5" || Modelname == "SR20DET6" ||
+        Modelname == "SR20T1-D" || Modelname == "SR20T2-D" || Modelname == "SR20T5-D" ||Modelname == "RB20DET " ||
+        Modelname == "RB25DET " || Modelname == "RB25DET2" || Modelname == "RB26DETT" || Modelname == "VG30DETT" ||
+        Modelname == "CA181PRO" || Modelname == "SR2N1PRO" || Modelname == "SR2N2PRO" || Modelname == "SR2N3PRO" ||
+        Modelname == "SR2N4PRO" || Modelname == "SR201PRO" || Modelname == "SR202PRO" || Modelname == "SR203PRO" ||
+        Modelname == "SR204PRO" || Modelname == "SR205PRO" || Modelname == "SR206PRO" || Modelname == "RB201PRO" ||
+        Modelname == "RB251PRO" || Modelname == "RB252PRO" || Modelname == "RB261PRO" || Modelname == "RB262PRO" ||
+        Modelname == "RB26Pro " || Modelname == "RB26PRO " || Modelname == "RB26PRO1" || Modelname == "RB25PRO2" ||
+        Modelname == "CA18T1-D" || Modelname == "SR20T1-D" || Modelname == "SR20T2-D" || Modelname == "SR20T3-D" ||
+        Modelname == "SR20T4-D" || Modelname == "SR20T5-D" || Modelname == "RB26_1-D" || Modelname == "RB26_2-D" ||
+        Modelname == "VG30TT-D")
     {
         Model =2;
     }
     //Toyota
-    if (Modelname == "TOYOTA-L" || Modelname == "1ZZ-FE  " || Modelname == "1ZZ-FET " || Modelname == "2ZZ-GE  " || Modelname == "3S-GE   " || Modelname == "3SGET   " || Modelname == "1JZ-GTE " || Modelname == "1JZGT-AT" || Modelname == "4A-G1   " || Modelname == "4A-G2   " || Modelname == "1JGT1PRO" || Modelname == "TOYOTA-D" || Modelname == "4A-GE   " || Modelname == "4A-GE1  " || Modelname == "4A-GE2  " || Modelname == "4A-GE3  " || Modelname == "4AGE1-TH" || Modelname == "4AGE2-TH" || Modelname == "4AGE3-TH" || Modelname == "4E-FTE1 " || Modelname == "4E-FTE2 " || Modelname == "1JZGT-D " || Modelname == "3S-GE1  " || Modelname == "3S-GE2  " || Modelname == "3S-GTE  " || Modelname == "3S-GTE2 " || Modelname == "3S-GTE3 " || Modelname == "1JZ-GTE2" || Modelname == "1JZ-GTE3" || Modelname == "2JZ-GTE1" || Modelname == "2JZ-GTE2" || Modelname == "4AGE1PRO" || Modelname == "4AGE2PRO" || Modelname == "4AGE3PRO" || Modelname == "4EFT1PRO" || Modelname == "4EFT2PRO" || Modelname == "3SGE1PRO" || Modelname == "3SGT1PRO" || Modelname == "3SGT2PRO" || Modelname == "3SGT3PRO" || Modelname == "1JGT2PRO" || Modelname == "1JGT3PRO" || Modelname == "2JGT1PRO" || Modelname == "2JGT2PRO")
+    if (Modelname == "TOYOTA-L" || Modelname == "1ZZ-FE  " || Modelname == "1ZZ-FET " || Modelname == "2ZZ-GE  " ||
+        Modelname == "3S-GE   " || Modelname == "3SGET   " || Modelname == "1JZ-GTE " || Modelname == "1JZGT-AT" ||
+        Modelname == "4A-G1   " || Modelname == "4A-G2   " || Modelname == "1JGT1PRO" || Modelname == "TOYOTA-D" ||
+        Modelname == "4A-GE   " || Modelname == "4A-GE1  " || Modelname == "4A-GE2  " || Modelname == "4A-GE3  " ||
+        Modelname == "4AGE1-TH" || Modelname == "4AGE2-TH" || Modelname == "4AGE3-TH" || Modelname == "4E-FTE1 " ||
+        Modelname == "4E-FTE2 " || Modelname == "1JZGT-D " || Modelname == "3S-GE1  " || Modelname == "3S-GE2  " ||
+        Modelname == "3S-GTE  " || Modelname == "3S-GTE2 " || Modelname == "3S-GTE3 " || Modelname == "1JZ-GTE2" ||
+        Modelname == "1JZ-GTE3" || Modelname == "2JZ-GTE1" || Modelname == "2JZ-GTE2" || Modelname == "4AGE1PRO" ||
+        Modelname == "4AGE2PRO" || Modelname == "4AGE3PRO" || Modelname == "4EFT1PRO" || Modelname == "4EFT2PRO" ||
+        Modelname == "3SGE1PRO" || Modelname == "3SGT1PRO" || Modelname == "3SGT2PRO" || Modelname == "3SGT3PRO" ||
+        Modelname == "1JGT2PRO" || Modelname == "1JGT3PRO" || Modelname == "2JGT1PRO" || Modelname == "2JGT2PRO")
     {
         Model =3;
     }
     //Subaru
-    if (Modelname == "EJ20G   " || Modelname == "EJ20K   " || Modelname == "EJ207   " || Modelname == "EJ20R   " || Modelname == "EJ20GPRO")
+    if (Modelname == "EJ20G   " || Modelname == "EJ20K   " || Modelname == "EJ207   " || Modelname == "EJ20R   " ||
+        Modelname == "EJ20GPRO")
     {
         Model =2;
     }
     //Honda
-    if (Modelname == "D15B    " || Modelname == "B16A1   " || Modelname == "B16A-US " || Modelname == "B16A2   " || Modelname == "B16A1-TH" || Modelname == "B16B    " || Modelname == "B16B2   " || Modelname == "B16BT   " || Modelname == "B16B1-TH" || Modelname == "B16B2-TH" || Modelname == "B18C    " || Modelname == "B18C-US " || Modelname == "B18C2   " || Modelname == "B18CT   " || Modelname == "B18C1-TH" || Modelname == "B16A1PRO" || Modelname == "B16A2PRO" || Modelname == "B16B1PRO" || Modelname == "B16B2PRO" || Modelname == "B18C1PRO" || Modelname == "H22A    " )
+    if (Modelname == "D15B    " || Modelname == "B16A1   " || Modelname == "B16A-US " || Modelname == "B16A2   " ||
+        Modelname == "B16A1-TH" || Modelname == "B16B    " || Modelname == "B16B2   " || Modelname == "B16BT   " ||
+        Modelname == "B16B1-TH" || Modelname == "B16B2-TH" || Modelname == "B18C    " || Modelname == "B18C-US " ||
+        Modelname == "B18C2   " || Modelname == "B18CT   " || Modelname == "B18C1-TH" || Modelname == "B16A1PRO" ||
+        Modelname == "B16A2PRO" || Modelname == "B16B1PRO" || Modelname == "B16B2PRO" || Modelname == "B18C1PRO" ||
+        Modelname == "H22A    " )
     {
         Model =2;
     }
     //Mitsubishi
-    if (Modelname == "4G63    " || Modelname == "4G63-US " || Modelname == "4G63-3  " || Modelname == "4G63-5  " || Modelname == "4G63-6  " || Modelname == "4G63-7  " ||  Modelname == "4G63D_US" || Modelname == "4G63-D  " || Modelname == "4G63-D3 " || Modelname == "4G63-D4 " || Modelname == "4G63-D5 " || Modelname == "4G63-D6 " || Modelname == "4G63-D7 ")
+    if (Modelname == "4G63    " || Modelname == "4G63-US " || Modelname == "4G63-3  " || Modelname == "4G63-5  " ||
+        Modelname == "4G63-6  " || Modelname == "4G63-7  " ||  Modelname == "4G63D_US" || Modelname == "4G63-D  " ||
+        Modelname == "4G63-D3 " || Modelname == "4G63-D4 " || Modelname == "4G63-D5 " || Modelname == "4G63-D6 " ||
+        Modelname == "4G63-D7 ")
     {
         Model =3;
     }    
@@ -860,14 +907,14 @@ void Apexi::calculatorAux(float aux1min,float aux2max,float aux3min,float aux4ma
     qDebug() << Auxunit1<<auxval1 <<auxval2 <<Auxunit2 << auxval3<<auxval4;
 }
 
-void Apexi::writeDashfile(const QString &gauge1,const QString &gauge2,const QString &gauge3,const QString &gauge4,const QString &gauge5,const QString &gauge6)
+void Apexi::writeDashfile(const QString &gauge1, const QString &gauge2, const QString &gauge3,
+                           const QString &gauge4, const QString &gauge5, const QString &gauge6)
 {
 //Creates the dashboard file for the Apexi Dash
 
     QString filename="UserDashApexi.txt";
     QFile file( filename );
     if ( file.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text) )
-
     {
         QTextStream stream( &file );
         stream << gauge1 << endl;
@@ -881,7 +928,6 @@ void Apexi::writeDashfile(const QString &gauge1,const QString &gauge2,const QStr
     QString filename2="/home/pi/UserDashboards/UserDashApexi.txt";
     QFile file2( filename2 );
     if ( file2.open(QIODevice::ReadWrite  | QIODevice::Truncate | QIODevice::Text) )
-
     {
         QTextStream stream( &file2 );
         stream << gauge1 << endl;
